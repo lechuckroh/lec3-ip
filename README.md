@@ -1,2 +1,7 @@
-# lec3-ip
-LEC3 ImageProcessor
+# LEC3 ImageProcessor
+
+Image Process module of LEC3
+
+## Requirements
+
+* GoLang
