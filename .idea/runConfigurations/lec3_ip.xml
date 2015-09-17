@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="lec3-ip" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <output_file path="C:\works\go\lec3-ip\bin" />
+    <module name="lec3-ip" />
+    <working_directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <kind value="PACKAGE" />
+    <package value="lec3-ip" />
+    <method />
+  </configuration>
+</component>
