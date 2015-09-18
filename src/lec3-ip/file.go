@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+	"path/filepath"
+	"strings"
 )
 
 // List image files that modified after timeAfterOptional
@@ -26,7 +28,12 @@ func ListImages(dir string, timeAfterOptional ...time.Time) ([]os.FileInfo, time
 
 	// Get file list that modified after EMT
 	for _, file := range files {
-		if file.ModTime().After(timeAfter) {
+		ext := strings.ToLower(filepath.Ext(file.Name()))
+		if !file.ModTime().After(timeAfter) {
+			continue
+		}
+
+		if ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp" {
 			result = append(result, file)
 		}
 	}
