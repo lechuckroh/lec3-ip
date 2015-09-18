@@ -45,7 +45,7 @@ func processFiles(channel chan os.FileInfo, destDir string) {
 		if file == nil {
 			break
 		}
-		fmt.Printf("%+v\n", file.Name())
+		fmt.Printf("File : %+v\n", file.Name())
 	}
 }
 
@@ -63,6 +63,10 @@ func main() {
 		flag.Usage()
 		return
 	}
+
+	fmt.Printf("srcDir : %+v\n", *srcDir)
+	fmt.Printf("destDir : %+v\n", *destDir)
+	fmt.Printf("watch : %+v\n", *watch)
 
 	// Create channel
 	channel := make(chan os.FileInfo)

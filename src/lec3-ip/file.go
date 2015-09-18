@@ -6,18 +6,34 @@ import (
 	"time"
 	"path/filepath"
 	"strings"
+	"sort"
 )
+
+// Sort FileInfo by Name
+type Files []os.FileInfo
+
+func (files Files) Len() int {
+	return len(files)
+}
+
+func (files Files) Less(i, j int) bool {
+	return files[i].Name() < files[j].Name()
+}
+
+func (files Files) Swap(i, j int) {
+	files[i], files[j] = files[j], files[i]
+}
 
 // List image files that modified after timeAfterOptional
 func ListImages(dir string, timeAfterOptional ...time.Time) ([]os.FileInfo, time.Time, error) {
-	var result []os.FileInfo
+	var files Files
 
 	lastCheckTime := time.Now()
 	files, err := ioutil.ReadDir(dir)
 
 	// Failed to read directory
 	if err != nil {
-		return result, lastCheckTime, err
+		return files, lastCheckTime, err
 	}
 
 	// Get EMT(Earliest Modified Time)
@@ -34,8 +50,11 @@ func ListImages(dir string, timeAfterOptional ...time.Time) ([]os.FileInfo, time
 		}
 
 		if ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp" {
-			result = append(result, file)
+			files = append(files, file)
 		}
 	}
-	return result, lastCheckTime, nil
+
+	sort.Sort(files)
+
+	return files, lastCheckTime, nil
 }
