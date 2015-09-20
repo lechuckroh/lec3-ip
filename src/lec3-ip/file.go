@@ -26,14 +26,14 @@ func (files Files) Swap(i, j int) {
 
 // List image files that modified after timeAfterOptional
 func ListImages(dir string, timeAfterOptional ...time.Time) ([]os.FileInfo, time.Time, error) {
-	var files Files
+	var result Files
 
 	lastCheckTime := time.Now()
 	files, err := ioutil.ReadDir(dir)
 
 	// Failed to read directory
 	if err != nil {
-		return files, lastCheckTime, err
+		return result, lastCheckTime, err
 	}
 
 	// Get EMT(Earliest Modified Time)
@@ -49,12 +49,12 @@ func ListImages(dir string, timeAfterOptional ...time.Time) ([]os.FileInfo, time
 			continue
 		}
 
-		if ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp" {
-			files = append(files, file)
+		if ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" {
+			result = append(result, file)
 		}
 	}
 
-	sort.Sort(files)
+	sort.Sort(result)
 
-	return files, lastCheckTime, nil
+	return result, lastCheckTime, nil
 }
