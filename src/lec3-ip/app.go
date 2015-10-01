@@ -6,7 +6,6 @@ import (
 	"time"
 	"os"
 	"image"
-	"github.com/disintegration/gift"
 	"path"
 	"runtime"
 	"sync"
@@ -53,7 +52,7 @@ func collectImages(workChan chan<- Work, finChan chan<- bool, srcDir string, wat
 	}
 }
 
-func work(worker Worker, g *gift.GIFT, destDir string, wg *sync.WaitGroup) {
+func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 	defer func() {
 		wg.Done()
 	}()
@@ -72,8 +71,12 @@ func work(worker Worker, g *gift.GIFT, destDir string, wg *sync.WaitGroup) {
 			continue
 		}
 
-		dest := image.NewRGBA(g.Bounds(src.Bounds()))
-		g.Draw(dest, src)
+		// run filters
+		var dest image.Image
+		for _, filter := range filters {
+			dest = filter.run(src)
+			src = dest
+		}
 
 		// save dest Image
 		err = SaveJpeg(dest, destDir, work.filename, 80)
@@ -82,13 +85,6 @@ func work(worker Worker, g *gift.GIFT, destDir string, wg *sync.WaitGroup) {
 			continue
 		}
 	}
-}
-
-func createGIFT() *gift.GIFT {
-	return gift.New(
-		gift.ResizeToFit(800, 800, gift.LanczosResampling),
-		gift.UnsharpMask(1.0, 1.0, 0.0),
-	)
 }
 
 func main() {
@@ -122,12 +118,16 @@ func main() {
 	// start collector
 	go collectImages(workChan, finChan, *srcDir, *watch)
 
+	// create filters
+	filters := []Filter{
+		NewEdgeDetectionFilter(),
+	}
+
 	// start workers
-	g := createGIFT()
 	for i := 0; i < numCpu; i++ {
 		worker := Worker{workChan}
 		wg.Add(1)
-		go work(worker, g, *destDir, &wg)
+		go work(worker, filters, *destDir, &wg)
 	}
 
 	// wait for collector finish
