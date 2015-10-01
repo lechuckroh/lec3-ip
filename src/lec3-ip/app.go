@@ -9,17 +9,27 @@ import (
 	"github.com/disintegration/gift"
 	"path"
 	"runtime"
+	"sync"
 )
 
-func pushImages(waitChannel chan int, channel chan string, srcDir string, watch bool) {
+type Work struct {
+	dir string
+	filename string
+	quit bool
+}
+
+type Worker struct {
+	workChan <-chan Work
+}
+
+func collectImages(workChan chan<- Work, finChan chan<- bool, srcDir string, watch bool) {
+	defer func() {
+		finChan <- true
+	}()
+
 	lastCheckTime := time.Unix(0, 0)
 	var files []os.FileInfo
 	var err error
-
-	defer func() {
-		channel <- ""
-		waitChannel <- 1
-	}()
 
 	for {
 		// List modified image files
@@ -29,9 +39,9 @@ func pushImages(waitChannel chan int, channel chan string, srcDir string, watch 
 			break
 		}
 
-		// push modified image files to channel
+		// add works
 		for _, file := range files {
-			channel <- file.Name()
+			workChan <- Work{srcDir, file.Name(), false}
 		}
 
 		if watch {
@@ -43,28 +53,22 @@ func pushImages(waitChannel chan int, channel chan string, srcDir string, watch 
 	}
 }
 
-// Process image files
-func processFiles(waitChannel chan int, channel chan string, srcDir string, destDir string) {
-	g := gift.New(
-		gift.ResizeToFit(800, 800, gift.LanczosResampling),
-		gift.UnsharpMask(1.0, 1.0, 0.0),
-	)
-
+func work(worker Worker, g *gift.GIFT, destDir string, wg *sync.WaitGroup) {
 	defer func() {
-		waitChannel <- 1
+		wg.Done()
 	}()
 
 	for {
-		filename := <-channel
-		if filename == "" {
-			close(channel)
+		work := <-worker.workChan
+		if work.quit {
 			break
 		}
-		fmt.Printf("Processing : %+v\n", filename)
 
-		src, err := LoadImage(path.Join(srcDir, filename))
+		fmt.Printf("Processing : %+v\n", work.filename)
+
+		src, err := LoadImage(path.Join(work.dir, work.filename))
 		if err != nil {
-			fmt.Printf("Error : %+v : %+v\n", filename, err)
+			fmt.Printf("Error : %+v : %+v\n", work.filename, err)
 			continue
 		}
 
@@ -72,17 +76,24 @@ func processFiles(waitChannel chan int, channel chan string, srcDir string, dest
 		g.Draw(dest, src)
 
 		// save dest Image
-		err = SaveJpeg(dest, destDir, filename, 80)
+		err = SaveJpeg(dest, destDir, work.filename, 80)
 		if err != nil {
-			fmt.Printf("Error : %+v : %+v\n", filename, err)
+			fmt.Printf("Error : %+v : %+v\n", work.filename, err)
 			continue
 		}
 	}
 }
 
+func createGIFT() *gift.GIFT {
+	return gift.New(
+		gift.ResizeToFit(800, 800, gift.LanczosResampling),
+		gift.UnsharpMask(1.0, 1.0, 0.0),
+	)
+}
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	numCpu := runtime.NumCPU()
+	runtime.GOMAXPROCS(numCpu)
 
 	// Parse command-line options
 	srcDir := flag.String("src", "./", "source directory")
@@ -101,13 +112,31 @@ func main() {
 	fmt.Printf("destDir : %+v\n", *destDir)
 	fmt.Printf("watch : %+v\n", *watch)
 
-	// Create channel with buffer size
-	channel := make(chan string, 1000)
-	waitChannel := make(chan int)
+	// Create channels
+	workChan := make(chan Work, 100)
+	finChan := make(chan bool)
 
-	go pushImages(waitChannel, channel, *srcDir, *watch)
-	go processFiles(waitChannel, channel, *srcDir, *destDir)
+	// WaitGroup
+	wg := sync.WaitGroup{}
 
-	<-waitChannel
-	<-waitChannel
+	// start collector
+	go collectImages(workChan, finChan, *srcDir, *watch)
+
+	// start workers
+	g := createGIFT()
+	for i := 0; i < numCpu; i++ {
+		worker := Worker{workChan}
+		wg.Add(1)
+		go work(worker, g, *destDir, &wg)
+	}
+
+	// wait for collector finish
+	<- finChan
+
+	// finish workers
+	for i := 0; i < numCpu; i++ {
+		workChan <- Work{"", "", true}
+	}
+
+	wg.Wait()
 }
