@@ -74,7 +74,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 		// run filters
 		var dest image.Image
 		for _, filter := range filters {
-			dest = filter.run(src)
+			dest = filter.Run(src)
 			src = dest
 		}
 
@@ -120,7 +120,7 @@ func main() {
 
 	// create filters
 	filters := []Filter{
-		NewEdgeDetectionFilter(),
+		NewAutoCropFilter(),
 	}
 
 	// start workers

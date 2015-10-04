@@ -4,5 +4,5 @@ import (
 )
 
 type Filter interface {
-	run(src image.Image) image.Image
+	Run(src image.Image) image.Image
 }
