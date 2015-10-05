@@ -6,9 +6,10 @@ import (
 
 type AutoCropFilter struct {
 	edgeDetect *gift.GIFT
+	threshold uint32
 }
 
-func NewAutoCropFilter() AutoCropFilter {
+func NewAutoCropFilter(threshold uint32) AutoCropFilter {
 	edgeDetect := gift.New(
 		gift.Convolution(
 			[]float32{
@@ -19,7 +20,7 @@ func NewAutoCropFilter() AutoCropFilter {
 			false, false, false, 0.0,
 		))
 
-	return AutoCropFilter{edgeDetect}
+	return AutoCropFilter{edgeDetect, threshold}
 }
 
 func (f AutoCropFilter) Run(src image.Image) image.Image {
@@ -32,12 +33,11 @@ func (f AutoCropFilter) Run(src image.Image) image.Image {
 	// calculate boundary
 	width := bounds.Dx()
 	height := bounds.Dy()
-	threshold := uint32(0)
 
-	top := findTopEdge(edgeDetected, width, height, threshold)
-	bottom := findBottomEdge(edgeDetected, width, height, top, threshold)
-	left := findLeftEdge(edgeDetected, width, height, top, bottom, threshold)
-	right := findRightEdge(edgeDetected, width, height, top, bottom, left, threshold)
+	top := findTopEdge(edgeDetected, width, height, f.threshold)
+	bottom := findBottomEdge(edgeDetected, width, height, top, f.threshold)
+	left := findLeftEdge(edgeDetected, width, height, top, bottom, f.threshold)
+	right := findRightEdge(edgeDetected, width, height, top, bottom, left, f.threshold)
 
 	// crop image
 	if top > 0 || left > 0 || right < (width - 1) || bottom < (height - 1) {

@@ -120,7 +120,7 @@ func main() {
 
 	// create filters
 	filters := []Filter{
-		NewAutoCropFilter(),
+		NewAutoCropFilter(uint32(100 * 256)),
 	}
 
 	// start workers
