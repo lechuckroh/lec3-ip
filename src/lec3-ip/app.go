@@ -125,8 +125,9 @@ func main() {
 	go collectImages(workChan, finChan, *srcDir, *watch)
 
 	// create filters
+	autoCropOption := AutoCropOption{uint32(100*256), 1, 3, 0.2, 0.2}
 	filters := []Filter{
-		NewAutoCropFilter(uint32(100 * 256)),
+		NewAutoCropFilter(autoCropOption),
 	}
 
 	// start workers
