@@ -31,7 +31,7 @@ func NewAutoCropFilter(option AutoCropOption) AutoCropFilter {
 	return AutoCropFilter{edgeDetect, option}
 }
 
-// override Filter.Run()
+// Implements Filter.Run()
 func (f AutoCropFilter) Run(s interface{}) interface{} {
 	switch src := s.(type) {
 	case image.Image:
