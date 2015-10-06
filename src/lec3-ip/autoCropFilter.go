@@ -6,7 +6,7 @@ import (
 
 type AutoCropFilter struct {
 	edgeDetect *gift.GIFT
-	threshold uint32
+	threshold  uint32
 }
 
 func NewAutoCropFilter(threshold uint32) AutoCropFilter {
@@ -23,7 +23,16 @@ func NewAutoCropFilter(threshold uint32) AutoCropFilter {
 	return AutoCropFilter{edgeDetect, threshold}
 }
 
-func (f AutoCropFilter) Run(src image.Image) image.Image {
+func (f AutoCropFilter) Run(s interface{}) interface{} {
+	switch src := s.(type) {
+	case image.Image:
+		return f.runFilter(src)
+	default:
+		return nil
+	}
+}
+
+func (f AutoCropFilter) runFilter(src image.Image) image.Image {
 	bounds := src.Bounds()
 
 	// Edge Detect

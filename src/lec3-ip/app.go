@@ -12,16 +12,16 @@ import (
 )
 
 type Work struct {
-	dir string
+	dir      string
 	filename string
-	quit bool
+	quit     bool
 }
 
 type Worker struct {
 	workChan <-chan Work
 }
 
-func collectImages(workChan chan<- Work, finChan chan<- bool, srcDir string, watch bool) {
+func collectImages(workChan chan <- Work, finChan chan <- bool, srcDir string, watch bool) {
 	defer func() {
 		finChan <- true
 	}()
@@ -74,14 +74,20 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 		// run filters
 		var dest image.Image
 		for _, filter := range filters {
-			dest = filter.Run(src)
-			src = dest
+			switch result := filter.Run(src).(type) {
+			case image.Image:
+				dest = result
+				src = dest
+			default:
+				fmt.Errorf("Unhandled filter result type\n")
+				break
+			}
 		}
 
 		// save dest Image
 		err = SaveJpeg(dest, destDir, work.filename, 80)
 		if err != nil {
-			fmt.Printf("Error : %+v : %+v\n", work.filename, err)
+			fmt.Errorf("Error : %+v : %+v\n", work.filename, err)
 			continue
 		}
 	}
@@ -131,7 +137,7 @@ func main() {
 	}
 
 	// wait for collector finish
-	<- finChan
+	<-finChan
 
 	// finish workers
 	for i := 0; i < numCpu; i++ {
