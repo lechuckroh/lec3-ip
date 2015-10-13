@@ -1,0 +1,6 @@
+#!/bin/bash
+CURDIR=$(pwd)
+GOPATH=$CURDIR
+go get -u github.com/disintegration/gift
+cd $CURDIR/src/lec3-ip
+go install
