@@ -70,14 +70,15 @@ func (f DeskewFilter) run(src image.Image) image.Image {
 func (f DeskewFilter) detectRotationAngle(src image.Image) float32 {
 	// increase rotation angle by incrStep
 	maxEmptyLineCount := 0
-	detectedAngle := 0
+	detectedAngle := float32(0)
 
 	prevPositiveCount := 0
 	prevNegativeCount := 0
 	positiveDir := true
 	negativeDir := true
 
-	for angle := 0; angle <= f.option.maxRotation; angle += f.option.incrStep {
+	var angle float32
+	for angle = 0; angle <= f.option.maxRotation; angle += f.option.incrStep {
 		if positiveDir {
 			rotatedImg := f.rotateImage(src, angle)
 			if rotatedImg != nil {
@@ -137,11 +138,11 @@ func (f DeskewFilter) getRotateFilter(angle float32) *gift.GIFT {
 }
 
 // calculate dot count of each horizontal line
-func calcDotCounts(img image.Image, threshold uint32) []uint32 {
+func calcDotCounts(img image.Image, threshold uint32) []int {
 	bounds := img.Bounds()
 	w, h := bounds.Dx(), bounds.Dy()
 
-	dotCounts := make([]uint32, h)
+	dotCounts := make([]int, h)
 	for y := 0; y < h; y++ {
 		dotCount := 0
 		for x := 0; x < w; x++ {
@@ -155,7 +156,7 @@ func calcDotCounts(img image.Image, threshold uint32) []uint32 {
 }
 
 // get empty horizontal line count
-func (f DeskewFilter) getEmptyLineCount(img image.Image) uint32 {
+func (f DeskewFilter) getEmptyLineCount(img image.Image) int {
 	dotCounts := calcDotCounts(img, f.option.threshold)
 
 	emptyLineCount := 0
