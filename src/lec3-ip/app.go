@@ -9,6 +9,7 @@ import (
 	"path"
 	"runtime"
 	"sync"
+	"image/color"
 )
 
 type Work struct {
@@ -125,8 +126,10 @@ func main() {
 	go collectImages(workChan, finChan, *srcDir, *watch)
 
 	// create filters
+	deskewOption := DeskewOption{2.0, 0.2, color.White, uint32(100*256), 10, "./debug", true}
 	autoCropOption := AutoCropOption{uint32(100*256), 1, 3, 0.2, 0.2}
 	filters := []Filter{
+		NewDeskewFilter(deskewOption),
 		NewAutoCropFilter(autoCropOption),
 	}
 
