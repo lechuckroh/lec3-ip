@@ -5,6 +5,7 @@ import (
 	"github.com/disintegration/gift"
 	"image/color"
 	"fmt"
+	"time"
 )
 
 type DeskewOption struct {
@@ -48,14 +49,15 @@ func NewDeskewFilter(option DeskewOption) DeskewFilter {
 func (f DeskewFilter) Run(s interface{}) interface{} {
 	switch src := s.(type) {
 	case image.Image:
-		return f.run(src)
+		now := time.Now().UnixNano()
+		return f.run(src, fmt.Sprintf("%v", now))
 	default:
 		return nil
 	}
 }
 
 // actual deskew implementation
-func (f DeskewFilter) run(src image.Image) image.Image {
+func (f DeskewFilter) run(src image.Image, name string) image.Image {
 	bounds := src.Bounds()
 
 	// Edge Detect
@@ -63,14 +65,14 @@ func (f DeskewFilter) run(src image.Image) image.Image {
 	f.edgeDetect.Draw(edgeDetected, src)
 
 	// Find preferred rotation angle
-	if angle := f.detectRotationAngle(edgeDetected); angle != 0 {
+	if angle := f.detectRotationAngle(edgeDetected, name); angle != 0 {
 		return f.rotateImage(src, angle)
 	}
 	return src
 }
 
-func (f DeskewFilter) detectRotationAngle(src image.Image) float32 {
-	maxEmptyLineCount := f.calcEmptyLineCount(src, 0)
+func (f DeskewFilter) detectRotationAngle(src image.Image, name string) float32 {
+	maxEmptyLineCount := f.calcEmptyLineCount(src, 0, name)
 
 	// increase rotation angle by incrStep
 	detectedAngle := float32(0)
@@ -82,8 +84,7 @@ func (f DeskewFilter) detectRotationAngle(src image.Image) float32 {
 
 	for angle := f.option.incrStep; angle <= f.option.maxRotation; angle += f.option.incrStep {
 		if positiveDir {
-			emptyLineCount := f.calcEmptyLineCount(src, angle)
-			fmt.Printf("angle=%v, emptyLines=%v\n", angle, emptyLineCount)
+			emptyLineCount := f.calcEmptyLineCount(src, angle, name)
 
 			if emptyLineCount > maxEmptyLineCount {
 				maxEmptyLineCount = emptyLineCount
@@ -95,8 +96,7 @@ func (f DeskewFilter) detectRotationAngle(src image.Image) float32 {
 		}
 
 		if angle > 0 && negativeDir {
-			emptyLineCount := f.calcEmptyLineCount(src, -angle)
-			fmt.Printf("angle=%v, emptyLines=%v\n", -angle, emptyLineCount)
+			emptyLineCount := f.calcEmptyLineCount(src, -angle, name)
 
 			if emptyLineCount > maxEmptyLineCount {
 				maxEmptyLineCount = emptyLineCount
@@ -108,19 +108,26 @@ func (f DeskewFilter) detectRotationAngle(src image.Image) float32 {
 		}
 	}
 
-	fmt.Printf("detected angle %v\n", detectedAngle)
+	if detectedAngle != 0 {
+		fmt.Printf("detected angle %v\n", detectedAngle)
+	}
+
 	return detectedAngle
 }
 
-func (f DeskewFilter) calcEmptyLineCount(src image.Image, angle float32) int {
+func (f DeskewFilter) calcEmptyLineCount(src image.Image, angle float32, name string) int {
 	rotatedImg := f.rotateImage(src, angle)
 	count := -1
 	if rotatedImg != nil {
 		count = f.getEmptyLineCount(rotatedImg)
 	}
 
+	// save debug images
 	if (f.option.debugMode) {
-		// TODO: save debug images
+		filename := fmt.Sprintf("%v_%v.jpg", name, angle)
+		if err := SaveJpeg(rotatedImg, f.option.debugOutputDir, filename, 80); err != nil {
+			fmt.Errorf("Error : %v : %v\n", "", err)
+		}
 	}
 
 	return count
@@ -173,7 +180,7 @@ func (f DeskewFilter) getEmptyLineCount(img image.Image) int {
 	dotCounts := calcDotCounts(img, f.option.threshold)
 
 	emptyLineCount := 0
-	for dotCount := range dotCounts {
+	for _, dotCount := range dotCounts {
 		if dotCount <= f.option.emptyLineMinDotCount {
 			emptyLineCount++
 		}

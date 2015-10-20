@@ -10,6 +10,10 @@ type AutoCropOption struct {
 	maxRatio          float32 // max cropped ratio (height / width)
 	maxWidthCropRate  float32 // max width crop rate (0 <= rate < 1.0)
 	maxHeightCropRate float32 // max height crop rate (0 <= rate < 1.0)
+	marginTop         int
+	marginBottom      int
+	marginLeft        int
+	marginRight       int
 }
 
 type AutoCropFilter struct {
@@ -28,7 +32,10 @@ func NewAutoCropFilter(option AutoCropOption) AutoCropFilter {
 			},
 			false, false, false, 0.0,
 		))
-	return AutoCropFilter{edgeDetect, option}
+	return AutoCropFilter{
+		edgeDetect: edgeDetect,
+		option: option,
+	}
 }
 
 // Implements Filter.Run()
@@ -41,7 +48,7 @@ func (f AutoCropFilter) Run(s interface{}) interface{} {
 	}
 }
 
-// actual autoCriop implementation
+// actual autoCrop implementation
 func (f AutoCropFilter) run(src image.Image) image.Image {
 	bounds := src.Bounds()
 
@@ -127,7 +134,7 @@ func (f AutoCropFilter) findTopEdge(image *image.Gray, width, height int) int {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return y
+				return Max(0, y - f.option.marginTop)
 			}
 		}
 	}
@@ -140,7 +147,7 @@ func (f AutoCropFilter) findBottomEdge(image *image.Gray, width, height, top int
 	for y := height - 1; y > top; y-- {
 		for x := 0; x < width; x++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return y
+				return Min(height - 1, y + f.option.marginBottom)
 			}
 		}
 	}
@@ -153,7 +160,7 @@ func (f AutoCropFilter) findLeftEdge(image *image.Gray, width, height, top, bott
 	for x := 0; x < width; x++ {
 		for y := top + 1; y < bottom; y++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return x
+				return Max(0, x - f.option.marginLeft)
 			}
 		}
 	}
@@ -166,7 +173,7 @@ func (f AutoCropFilter) findRightEdge(image *image.Gray, width, height, top, bot
 	for x := width - 1; x > left; x-- {
 		for y := top + 1; y < bottom; y++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return x
+				return Min(width - 1, x + f.option.marginRight)
 			}
 		}
 	}

@@ -126,8 +126,26 @@ func main() {
 	go collectImages(workChan, finChan, *srcDir, *watch)
 
 	// create filters
-	deskewOption := DeskewOption{2.0, 0.2, color.White, uint32(100*256), 10, "./debug", true}
-	autoCropOption := AutoCropOption{uint32(100*256), 1, 3, 0.2, 0.2}
+	deskewOption := DeskewOption{
+		maxRotation: 2.0,
+		incrStep: 0.2,
+		bgColor: color.White,
+		threshold: uint32(100*256),
+		emptyLineMinDotCount: 10,
+		debugOutputDir: "./debug",
+		debugMode: false,
+	}
+	autoCropOption := AutoCropOption{
+		threshold: uint32(100*256),
+		minRatio: 1,
+		maxRatio: 3,
+		maxWidthCropRate: 0.2,
+		maxHeightCropRate: 0.2,
+		marginTop: 5,
+		marginBottom: 5,
+		marginLeft: 5,
+		marginRight: 5,
+	}
 	filters := []Filter{
 		NewDeskewFilter(deskewOption),
 		NewAutoCropFilter(autoCropOption),
