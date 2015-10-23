@@ -5,9 +5,10 @@ import (
 	"github.com/disintegration/gift"
 	"image/color"
 	"fmt"
-	"time"
 )
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 type DeskewOption struct {
 	maxRotation          float32     // max rotation angle (0 <= value <= 360)
 	incrStep             float32     // rotation angle increment step (0 <= value <= 360)
@@ -18,6 +19,26 @@ type DeskewOption struct {
 	debugMode            bool
 }
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+type DeskewFilterResult struct {
+	image    image.Image
+	filename string
+	angle    float32
+}
+
+func (r DeskewFilterResult) Image() image.Image {
+	return r.image
+}
+
+func (r DeskewFilterResult) Print() {
+	if r.angle != 0 {
+		fmt.Printf("%v : rotated angle=%v", r.filename, r.angle)
+	}
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 type DeskewFilter struct {
 	edgeDetect *gift.GIFT
 	rotateMap  map[float32]*gift.GIFT
@@ -46,18 +67,13 @@ func NewDeskewFilter(option DeskewOption) DeskewFilter {
 }
 
 // Implements Filter.Run()
-func (f DeskewFilter) Run(s interface{}) interface{} {
-	switch src := s.(type) {
-	case image.Image:
-		now := time.Now().UnixNano()
-		return f.run(src, fmt.Sprintf("%v", now))
-	default:
-		return nil
-	}
+func (f DeskewFilter) Run(s FilterSource) FilterResult {
+	resultImage, angle := f.run(s.image, s.filename)
+	return DeskewFilterResult{resultImage, s.filename, angle}
 }
 
 // actual deskew implementation
-func (f DeskewFilter) run(src image.Image, name string) image.Image {
+func (f DeskewFilter) run(src image.Image, name string) (image.Image, float32) {
 	bounds := src.Bounds()
 
 	// Edge Detect
@@ -66,9 +82,9 @@ func (f DeskewFilter) run(src image.Image, name string) image.Image {
 
 	// Find preferred rotation angle
 	if angle := f.detectRotationAngle(edgeDetected, name); angle != 0 {
-		return f.rotateImage(src, angle)
+		return f.rotateImage(src, angle), angle
 	}
-	return src
+	return src, 0
 }
 
 func (f DeskewFilter) detectRotationAngle(src image.Image, name string) float32 {

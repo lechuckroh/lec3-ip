@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"sync"
 	"image/color"
+	"reflect"
 )
 
 type Work struct {
@@ -75,14 +76,17 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 		// run filters
 		var dest image.Image
 		for _, filter := range filters {
-			switch result := filter.Run(src).(type) {
-			case image.Image:
-				dest = result
-				src = dest
-			default:
-				fmt.Errorf("Unhandled filter result type\n")
+			result := filter.Run(NewFilterSource(src, work.filename))
+			result.Print()
+
+			resultImg := result.Image()
+			if resultImg == nil {
+				fmt.Errorf("Filter result is nil. filter: %v\n", reflect.TypeOf(filter))
 				break
 			}
+
+			dest = resultImg
+			src = dest
 		}
 
 		// save dest Image

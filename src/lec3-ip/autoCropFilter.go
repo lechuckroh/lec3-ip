@@ -4,6 +4,8 @@ import (
 	"github.com/disintegration/gift"
 )
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 type AutoCropOption struct {
 	threshold         uint32  // threshold color value (0~0xffff)
 	minRatio          float32 // min cropped ratio (height / width)
@@ -16,6 +18,22 @@ type AutoCropOption struct {
 	marginRight       int
 }
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+type AutoCropResult struct {
+	image image.Image
+}
+
+func (r AutoCropResult) Image() image.Image {
+	return r.image
+}
+
+func (r AutoCropResult) Print() {
+}
+
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 type AutoCropFilter struct {
 	edgeDetect *gift.GIFT
 	option     AutoCropOption
@@ -39,13 +57,9 @@ func NewAutoCropFilter(option AutoCropOption) AutoCropFilter {
 }
 
 // Implements Filter.Run()
-func (f AutoCropFilter) Run(s interface{}) interface{} {
-	switch src := s.(type) {
-	case image.Image:
-		return f.run(src)
-	default:
-		return nil
-	}
+func (f AutoCropFilter) Run(s FilterSource) FilterResult {
+	resultImage := f.run(s.image)
+	return AutoCropResult{resultImage}
 }
 
 // actual autoCrop implementation
