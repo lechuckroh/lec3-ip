@@ -31,7 +31,7 @@ func (r DeskewFilterResult) Image() image.Image {
 	return r.image
 }
 
-func (r DeskewFilterResult) Print() {
+func (r DeskewFilterResult) Log() {
 	if r.angle != 0 {
 		fmt.Printf("%v : rotated angle=%v", r.filename, r.angle)
 	}

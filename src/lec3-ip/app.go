@@ -77,7 +77,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 		var dest image.Image
 		for _, filter := range filters {
 			result := filter.Run(NewFilterSource(src, work.filename))
-			result.Print()
+			result.Log()
 
 			resultImg := result.Image()
 			if resultImg == nil {
@@ -140,7 +140,7 @@ func main() {
 		debugMode: false,
 	}
 	autoCropOption := AutoCropOption{
-		threshold: uint32(100*256),
+		threshold: 100,
 		minRatio: 1,
 		maxRatio: 3,
 		maxWidthCropRate: 0.2,

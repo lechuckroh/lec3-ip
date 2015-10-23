@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="UnitTest" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="lec3-ip" />
+    <working_directory value="$PROJECT_DIR$/src/lec3-ip" />
+    <framework value="gotest" />
+    <kind value="DIRECTORY" />
+    <package value="main" />
+    <directory value="$PROJECT_DIR$/src/lec3-ip" />
+    <filePath value="$PROJECT_DIR$" />
+    <method />
+  </configuration>
+</component>

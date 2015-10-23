@@ -20,7 +20,7 @@ func NewFilterSource(image image.Image, filename string) FilterSource {
 // ----------------------------------------------------------------------------
 type FilterResult interface {
 	Image() image.Image
-	Print()
+	Log()
 }
 
 // ----------------------------------------------------------------------------
