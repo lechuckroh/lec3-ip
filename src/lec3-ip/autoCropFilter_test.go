@@ -3,7 +3,7 @@ import (
 	"testing"
 	"image"
 	"image/color"
-	"fmt"
+	_ "fmt"
 )
 
 // create image with colored rectangle
@@ -28,33 +28,24 @@ func TestRun(t *testing.T) {
 		{
 			AutoCropOption{
 				threshold: 128,
-				minRatio: 1.0,
-				maxRatio: 3.0,
-				maxWidthCropRate: 0.5,
-				maxHeightCropRate: 0.5,
-				marginTop: 10,
-				marginBottom: 10,
-				marginLeft: 10,
-				marginRight: 10,
+				minRatio: 1.0, maxRatio: 3.0,
+				maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
+				marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 			}, 120, 270,
 		},
-		{	// constraint maxRatio
+		{// constraint maxRatio
 			AutoCropOption{
 				threshold: 128,
-				minRatio: 1.0,
-				maxRatio: 2.0,
-				maxWidthCropRate: 0.5,
-				maxHeightCropRate: 0.5,
-				marginTop: 10,
-				marginBottom: 10,
-				marginLeft: 10,
-				marginRight: 10,
-			}, 134, 270,
+				minRatio: 1.0, maxRatio: 2.0,
+				maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
+				marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
+			}, 135, 270,
 		},
 	}
 
 	for idx, c := range cases {
-		// Create Image
+		// Create Image (200x350)
+		// Rectangle (100x250)
 		width, height, margin := 200, 350, 50
 		col := color.RGBA{200, 200, 200, 255}
 		srcImg := createImageWithRect(width, height, margin, margin, width - margin, height - margin, col)
@@ -62,8 +53,8 @@ func TestRun(t *testing.T) {
 		// Run Filter
 		option := c.option
 		result := NewAutoCropFilter(option).Run(NewFilterSource(srcImg, "filename"))
-		resultRect := result.(AutoCropResult).rect
-		fmt.Println(resultRect)
+//		resultRect := result.(AutoCropResult).rect
+//		fmt.Println(resultRect)
 
 		// Test result image size
 		destBounds := result.Image().Bounds()

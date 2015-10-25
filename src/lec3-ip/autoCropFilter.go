@@ -114,31 +114,22 @@ func (f AutoCropFilter) getCropRect(left, top, right, bottom int, bounds image.R
 
 	// adjust border
 	widthInc, heightInc := width - initWidth, height - initHeight
+	widthMargin, heightMargin := width - initWidth, height - initHeight
 
 	if widthInc > 0 {
-		incHalf := int(float32(widthInc) / 2)
-		dLeft, dRight := Min(left, incHalf), Min(width - right, incHalf)
-		if dLeft > incHalf {
-			dRight += incHalf - dLeft
-		}
-		if dRight < incHalf {
-			dLeft += incHalf - dRight
-		}
-		left -= dLeft
-		right += dRight
+		widthHalfMargin := int(float32(widthMargin) / 2)
+		leftMargin := Min(left, widthHalfMargin)
+		rightMargin := Min(imgWidth - right, widthMargin - leftMargin)
+		left -= leftMargin
+		right += rightMargin
 	}
 
 	if heightInc > 0 {
-		incHalf := int(float32(heightInc) / 2)
-		dTop, dBottom := Min(top, incHalf), Min(height - bottom, incHalf)
-		if dTop < incHalf {
-			dBottom += incHalf - dTop
-		}
-		if dBottom < incHalf {
-			dTop += incHalf - dBottom
-		}
-		top -= dTop
-		bottom += dBottom
+		heightHalfMargin := int(float32(heightMargin) / 2)
+		topMargin := Min(top, heightHalfMargin)
+		bottomMargin := Min(imgHeight - bottom, heightMargin - topMargin)
+		top -= topMargin
+		bottom += bottomMargin
 	}
 
 	return image.Rect(left, top, right, bottom)
