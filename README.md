@@ -7,21 +7,25 @@ Image Process module of LEC3
 * [Go-Lang](https://golang.org/)
 
 ## Build
-
 ### Windows
-
 * Running `build.bat` will get `bin\lec3-ip.exe`
 
 ### Linux / MacOSX
-
 * Running `./build` will get `bin/lec3-ip`
 
-## Usage
+## Test
+### Windows
+* Change directory to `src\lec3-ip`
+* Run `go test`
 
+### Linux / MacOSX
+* Change directory to `src/lec3-ip`
+* Run `go test`
+
+## Usage
 ```lec3-ip [options]```
 
 ### Options
-
 #### `-src`
 Source directory of images to process.
 
@@ -34,5 +38,5 @@ Watches source directory and process new/modified images.
 ### Examples
 
 ```bash
-lec3-ip -src=./input -dest=./output =watch=true
+lec3-ip -src=./input -dest=./output -watch=true
 ```
