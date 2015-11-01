@@ -38,12 +38,12 @@ func TestDeskewED(t *testing.T) {
 	wg := sync.WaitGroup{}
 	for idx, c := range cases {
 		wg.Add(1)
-		go testCase(t, idx, c, &wg)
+		go testDeskewEDCase(t, idx, &c, &wg)
 	}
 	wg.Wait()
 }
 
-func testCase(t *testing.T, idx int, c DeskewEDCase, wg *sync.WaitGroup) {
+func testDeskewEDCase(t *testing.T, idx int, c *DeskewEDCase, wg *sync.WaitGroup) {
 	defer func() {
 		wg.Done()
 	}()
