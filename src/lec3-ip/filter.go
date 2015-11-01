@@ -10,8 +10,8 @@ type FilterSource struct {
 	filename string
 }
 
-func NewFilterSource(image image.Image, filename string) FilterSource {
-	return FilterSource{image, filename}
+func NewFilterSource(image image.Image, filename string) *FilterSource {
+	return &FilterSource{image, filename}
 }
 
 
@@ -27,5 +27,5 @@ type FilterResult interface {
 // Filter interface
 // ----------------------------------------------------------------------------
 type Filter interface {
-	Run(src FilterSource) FilterResult
+	Run(src *FilterSource) FilterResult
 }

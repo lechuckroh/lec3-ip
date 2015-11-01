@@ -1,4 +1,5 @@
 package main
+import "math"
 
 func Max(x, y int) int {
 	if x > y {
@@ -15,3 +16,27 @@ func Min(x, y int) int {
 		return y
 	}
 }
+
+func Minf32(x, y float32) float32 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func Maxf32(x, y float32) float32 {
+	if x > y {
+		return x
+	}
+	return y
+}
+
+func Sincosf32(a float32) (float32, float32) {
+	sin, cos := math.Sincos(math.Pi * float64(a) / 180)
+	return float32(sin), float32(cos)
+}
+
+func Floorf32(x float32) float32 {
+	return float32(math.Floor(float64(x)))
+}
+

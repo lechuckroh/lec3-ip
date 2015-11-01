@@ -8,7 +8,7 @@ import (
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-type DeskewOption struct {
+type DeskewEDOption struct {
 	maxRotation          float32 // max rotation angle (0 <= value <= 360)
 	incrStep             float32 // rotation angle increment step (0 <= value <= 360)
 	emptyLineMinDotCount int
@@ -17,17 +17,17 @@ type DeskewOption struct {
 	threshold            uint8   // 0 ~ 255
 }
 
-type DeskewResult struct {
+type DeskewEDResult struct {
 	image        image.Image
 	filename     string
 	rotatedAngle float32
 }
 
-func (r DeskewResult) Image() image.Image {
+func (r DeskewEDResult) Image() image.Image {
 	return r.image
 }
 
-func (r DeskewResult) Log() {
+func (r DeskewEDResult) Log() {
 	if r.rotatedAngle != 0 {
 		fmt.Printf("%v : rotated angle=%v", r.filename, r.rotatedAngle)
 	}
@@ -36,14 +36,52 @@ func (r DeskewResult) Log() {
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-type DeskewFilter struct {
-	rotateMap map[float32]*gift.GIFT
-	option    DeskewOption
+// Get rotate filter by angle
+func (f DeskewEDFilter) getRotateFilter(angle float32) *gift.GIFT {
+	if rotate, ok := f.rotateMap[angle]; ok {
+		return rotate
+	} else {
+		fmt.Errorf("Cannot find rotate filter of angle %v\n", angle)
+		return nil
+	}
 }
 
-// Create DeskewFilter instance
-func NewDeskewFilter(option DeskewOption) DeskewFilter {
-	rotateBgColor := color.White
+// Rotate image
+func (f DeskewEDFilter) rotateImage(src image.Image, angle float32) image.Image {
+	bounds := src.Bounds()
+	width, height := CalcRotatedSize(bounds.Dx(), bounds.Dy(), angle)
+	dest := image.NewRGBA(image.Rect(0, 0, width, height))
+	rotateFilter := f.getRotateFilter(angle)
+	if rotateFilter == nil {
+		return nil
+	}
+
+	rotateFilter.Draw(dest, src)
+	return dest
+}
+
+// ----------------------------------------------------------------------------
+// EdgeDetectedDeskewFilter
+// ----------------------------------------------------------------------------
+
+type DeskewEDFilter struct {
+	rotateMap map[float32]*gift.GIFT
+	option    DeskewEDOption
+	edgeDetect *gift.GIFT
+}
+
+// Create DeskewEDFilter instance
+func NewDeskewEDFilter(option DeskewEDOption) *DeskewEDFilter {
+	edgeDetect := gift.New(
+		gift.Convolution(
+			[]float32{
+				-1, -1, -1,
+				-1, 8, -1,
+				-1, -1, -1,
+			},
+			false, false, false, 0.0,
+		))
+	rotateBgColor := color.Black
 
 	rotateMap := make(map[float32]*gift.GIFT)
 	for angle := float32(0); angle < option.maxRotation; angle += option.incrStep {
@@ -51,25 +89,33 @@ func NewDeskewFilter(option DeskewOption) DeskewFilter {
 		rotateMap[-angle] = gift.New(gift.Rotate(-angle, rotateBgColor, gift.CubicInterpolation))
 	}
 
-	return DeskewFilter{rotateMap, option}
+	return &DeskewEDFilter{
+		rotateMap: rotateMap,
+		option: option,
+		edgeDetect: edgeDetect,
+	}
 }
 
-
 // Implements Filter.Run()
-func (f DeskewFilter) Run(s *FilterSource) FilterResult {
+func (f DeskewEDFilter) Run(s *FilterSource) FilterResult {
 	resultImage, rotatedAngle := f.run(s.image, s.filename)
-	return DeskewResult{resultImage, s.filename, rotatedAngle}
+	return DeskewEDResult{resultImage, s.filename, rotatedAngle}
 }
 
 // actual deskew implementation
-func (f DeskewFilter) run(src image.Image, name string) (image.Image, float32) {
-	if angle := f.detectRotationAngle(src, name); angle != 0 {
+func (f DeskewEDFilter) run(src image.Image, name string) (image.Image, float32) {
+	// Edge Detect
+	edgeDetectedImg := image.NewGray(src.Bounds())
+	f.edgeDetect.Draw(edgeDetectedImg, src)
+
+	// Find preferred rotation angle
+	if angle := f.detectRotationAngle(edgeDetectedImg, name); angle != 0 {
 		return f.rotateImage(src, angle), angle
 	}
 	return src, 0
 }
 
-func (f DeskewFilter) detectRotationAngle(src image.Image, name string) float32 {
+func (f DeskewEDFilter) detectRotationAngle(src image.Image, name string) float32 {
 	minNonEmptyLineCount := f.calcNonEmptyLineCount(src, 0, name)
 
 	// increase rotation angle by incrStep
@@ -113,7 +159,7 @@ func (f DeskewFilter) detectRotationAngle(src image.Image, name string) float32 
 	return detectedAngle
 }
 
-func (f DeskewFilter) calcNonEmptyLineCount(src image.Image, angle float32, name string) int {
+func (f DeskewEDFilter) calcNonEmptyLineCount(src image.Image, angle float32, name string) int {
 	rotatedImg := f.rotateImage(src, angle)
 	count := -1
 	if rotatedImg != nil {
@@ -132,52 +178,9 @@ func (f DeskewFilter) calcNonEmptyLineCount(src image.Image, angle float32, name
 	return count
 }
 
-// Get rotate filter by angle
-func (f DeskewFilter) getRotateFilter(angle float32) *gift.GIFT {
-	if rotate, ok := f.rotateMap[angle]; ok {
-		return rotate
-	} else {
-		fmt.Errorf("Cannot find rotate filter of angle %v\n", angle)
-		return nil
-	}
-}
-
-// Rotate image
-func (f DeskewFilter) rotateImage(src image.Image, angle float32) image.Image {
-	bounds := src.Bounds()
-	width, height := CalcRotatedSize(bounds.Dx(), bounds.Dy(), angle)
-	dest := image.NewRGBA(image.Rect(0, 0, width, height))
-	rotateFilter := f.getRotateFilter(angle)
-	if rotateFilter == nil {
-		return nil
-	}
-
-	rotateFilter.Draw(dest, src)
-	return dest
-}
-
-// calculate dot count of each horizontal line
-func (f DeskewFilter) calcDotCounts(img image.Image) []int {
-	bounds := img.Bounds()
-	w, h := bounds.Dx(), bounds.Dy()
-
-	threshold := uint32(f.option.threshold) * 256
-	dotCounts := make([]int, h)
-	for y := 0; y < h; y++ {
-		dotCount := 0
-		for x := 0; x < w; x++ {
-			if r, g, b, _ := img.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
-				dotCount++
-			}
-		}
-		dotCounts[y] = dotCount
-	}
-	return dotCounts
-}
-
 // get empty horizontal line count
-func (f DeskewFilter) getNonEmptyLineCount(img image.Image) int {
-	dotCounts := f.calcDotCounts(img)
+func (f DeskewEDFilter) getNonEmptyLineCount(img image.Image) int {
+	dotCounts := f.calcDotCounts(img, uint32(f.option.threshold) * 256)
 	nonEmptyLineCount := 0
 	for _, dotCount := range dotCounts {
 		if dotCount > f.option.emptyLineMinDotCount {
@@ -185,4 +188,22 @@ func (f DeskewFilter) getNonEmptyLineCount(img image.Image) int {
 		}
 	}
 	return nonEmptyLineCount
+}
+
+// calculate dot count of each horizontal line (edge detected image)
+func (f DeskewEDFilter) calcDotCounts(img image.Image, threshold uint32) []int {
+	bounds := img.Bounds()
+	w, h := bounds.Dx(), bounds.Dy()
+
+	dotCounts := make([]int, h)
+	for y := 0; y < h; y++ {
+		dotCount := 0
+		for x := 0; x < w; x++ {
+			if r, _, _, _ := img.At(x, y).RGBA(); r > threshold {
+				dotCount++
+			}
+		}
+		dotCounts[y] = dotCount
+	}
+	return dotCounts
 }

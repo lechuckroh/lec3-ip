@@ -5,30 +5,31 @@ import (
 	"fmt"
 )
 
-func TestDeskew(t *testing.T) {
+func TestDeskewED(t *testing.T) {
 	cases := []struct {
-		option          DeskewOption
+		option          DeskewEDOption
 		rotation        float32
 		rotatedAngleMin float32
 		rotatedAngleMax float32
 	}{
 		{
-			DeskewOption{
+			DeskewEDOption{
 				maxRotation: 2,
 				incrStep: 0.2,
-				threshold: 220,
+				threshold: 100,
 				emptyLineMinDotCount: 0,
-//				debugOutputDir: "test",
-//				debugMode: true,
+				//debugOutputDir: "test",
+				//debugMode: true,
 			}, -1.4, 1.2, 1.6,
 		},
 		{
-			DeskewOption{
+			DeskewEDOption{
 				maxRotation: 2,
 				incrStep: 0.2,
-				threshold: 220,
+				threshold: 100,
 				emptyLineMinDotCount: 0,
-//				debugMode: true,
+				//debugOutputDir: "test",
+				//debugMode: true,
 			}, 1.4, -1.6, -1.2,
 		},
 	}
@@ -46,8 +47,8 @@ func TestDeskew(t *testing.T) {
 
 		// Run Filter
 		option := c.option
-		result := NewDeskewFilter(option).Run(NewFilterSource(rotatedImg, fmt.Sprintf("filename%v", idx)))
-		rotatedAngle := result.(DeskewResult).rotatedAngle
+		result := NewDeskewEDFilter(option).Run(NewFilterSource(rotatedImg, fmt.Sprintf("filename%v", idx)))
+		rotatedAngle := result.(DeskewEDResult).rotatedAngle
 
 		// Test result image size
 		if rotatedAngle + epsilon < c.rotatedAngleMin || rotatedAngle - epsilon > c.rotatedAngleMax {

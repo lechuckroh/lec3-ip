@@ -9,7 +9,6 @@ import (
 	"path"
 	"runtime"
 	"sync"
-	"image/color"
 	"reflect"
 )
 
@@ -133,8 +132,7 @@ func main() {
 	deskewOption := DeskewOption{
 		maxRotation: 2.0,
 		incrStep: 0.2,
-		bgColor: color.White,
-		threshold: uint32(100*256),
+		threshold: 100,
 		emptyLineMinDotCount: 10,
 		debugOutputDir: "./debug",
 		debugMode: false,

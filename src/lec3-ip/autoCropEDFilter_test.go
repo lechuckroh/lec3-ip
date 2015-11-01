@@ -5,15 +5,15 @@ import (
 	"fmt"
 )
 
-func TestAutoCrop(t *testing.T) {
+func TestAutoCropED(t *testing.T) {
 	cases := []struct {
-		option         AutoCropOption
+		option         AutoCropEDOption
 		expectedWidth  int
 		expectedHeight int
 	}{
 		{
-			AutoCropOption{
-				threshold: 128,
+			AutoCropEDOption{
+				threshold: 100,
 				minRatio: 1.0, maxRatio: 3.0,
 				maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 				marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
@@ -23,8 +23,8 @@ func TestAutoCrop(t *testing.T) {
 		},
 		{
 			// constraint maxRatio
-			AutoCropOption{
-				threshold: 128,
+			AutoCropEDOption{
+				threshold: 100,
 				minRatio: 1.0, maxRatio: 2.0,
 				maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 				marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
@@ -44,8 +44,8 @@ func TestAutoCrop(t *testing.T) {
 
 		// Run Filter
 		option := c.option
-		result := NewAutoCropFilter(option).Run(NewFilterSource(srcImg, "filename"))
-		resultRect := result.(AutoCropResult).rect
+		result := NewAutoCropEDFilter(option).Run(NewFilterSource(srcImg, "filename"))
+		resultRect := result.(AutoCropEDResult).rect
 		fmt.Printf("result rect = %v\n", resultRect)
 
 		// Test result image size
