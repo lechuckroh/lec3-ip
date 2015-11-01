@@ -21,8 +21,7 @@ func TestDeskew(t *testing.T) {
 				incrStep: 0.2,
 				threshold: 220,
 				emptyLineMinDotCount: 0,
-				//				debugOutputDir: "test",
-				//				debugMode: true,
+				//debugMode: true,
 			}, -1.4, 1.2, 1.6,
 		},
 		DeskewCase{
@@ -31,7 +30,7 @@ func TestDeskew(t *testing.T) {
 				incrStep: 0.2,
 				threshold: 220,
 				emptyLineMinDotCount: 0,
-				//				debugMode: true,
+				//debugMode: true,
 			}, 1.4, -1.6, -1.2,
 		},
 	}
