@@ -14,7 +14,7 @@ type DeskewOption struct {
 	emptyLineMinDotCount int
 	debugOutputDir       string
 	debugMode            bool
-	threshold            uint8   // 0 ~ 255
+	threshold            uint8   // min brightness of space (0~255)
 }
 
 type DeskewResult struct {

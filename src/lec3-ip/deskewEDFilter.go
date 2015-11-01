@@ -14,7 +14,7 @@ type DeskewEDOption struct {
 	emptyLineMinDotCount int
 	debugOutputDir       string
 	debugMode            bool
-	threshold            uint8   // 0 ~ 255
+	threshold            uint8   // edge strength threshold (0~255(max edge))
 }
 
 type DeskewEDResult struct {
