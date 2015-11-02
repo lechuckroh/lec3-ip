@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"sync"
 	"reflect"
+	"github.com/olebedev/config"
 )
 
 type Work struct {
@@ -80,7 +81,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 
 			resultImg := result.Image()
 			if resultImg == nil {
-				fmt.Errorf("Filter result is nil. filter: %v\n", reflect.TypeOf(filter))
+				fmt.Printf("Filter result is nil. filter: %v\n", reflect.TypeOf(filter))
 				break
 			}
 
@@ -91,10 +92,24 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 		// save dest Image
 		err = SaveJpeg(dest, destDir, work.filename, 80)
 		if err != nil {
-			fmt.Errorf("Error : %+v : %+v\n", work.filename, err)
+			fmt.Printf("Error : %+v : %+v\n", work.filename, err)
 			continue
 		}
 	}
+}
+
+func loadYaml(filename string) {
+	cfg, err := config.ParseYamlFile(filename)
+	if err != nil {
+		fmt.Printf("Error : Failed to parse %v : %v\n", filename, err)
+		return
+	}
+
+	// src
+	srcDir := cfg.UString("src.dir", "")
+	srcRecursive := cfg.UBool("src.recursive", false)
+	fmt.Printf("src.dir=%v\n", srcDir)
+	fmt.Printf("src.recursive=%v\n", srcRecursive)
 }
 
 func main() {
@@ -102,6 +117,7 @@ func main() {
 	runtime.GOMAXPROCS(numCpu)
 
 	// Parse command-line options
+	cfgFilename := flag.String("cfg", "", "config filename")
 	srcDir := flag.String("src", "./", "source directory")
 	destDir := flag.String("dest", "./output", "dest directory")
 	watch := flag.Bool("watch", false, "watch directory files update")
@@ -114,9 +130,14 @@ func main() {
 		return
 	}
 
+	fmt.Printf("cfgFilename : %+v\n", *cfgFilename)
 	fmt.Printf("srcDir : %+v\n", *srcDir)
 	fmt.Printf("destDir : %+v\n", *destDir)
 	fmt.Printf("watch : %+v\n", *watch)
+
+	if *cfgFilename != "" {
+		loadYaml(*cfgFilename)
+	}
 
 	// Create channels
 	workChan := make(chan Work, 100)
