@@ -2,5 +2,6 @@
 CURDIR=$(pwd)
 GOPATH=$CURDIR
 go get -u github.com/disintegration/gift
+go get -u github.com/olebedev/config
 cd $CURDIR/src/lec3-ip
 go install

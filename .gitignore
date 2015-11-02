@@ -27,3 +27,4 @@ _testmain.go
 /.idea/workspace.xml
 /bin
 /src/github.com
+/src/gopkg.in
