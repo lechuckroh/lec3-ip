@@ -1,0 +1,27 @@
+src:
+  recursive: true
+  dir: ./input/
+
+dest:
+  dir: ./output/
+
+maxProcess: auto
+
+filters:
+  - name: deskewED
+    options:
+      maxRotation: 2.0
+      incrStep: 0.2
+      emptyLineMinDotCount: 5
+      threshold: 100
+  - name: autoCrop
+    options:
+      threshold: 220
+      minRatio: 1.0
+      maxRatio: 3.0
+      maxWidthCropRate: 0.3
+      maxHeightCropRate: 0.3
+      marginTop: 5
+      marginBottom: 5
+      marginLeft: 5
+      marginRight: 5
