@@ -5,7 +5,8 @@ src:
 dest:
   dir: ./output/
 
-maxProcess: auto
+watch: false
+maxProcess: 0
 
 filters:
   - name: deskewED

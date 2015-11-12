@@ -6,6 +6,7 @@ dest:
   dir: ./output/
 
 watch: true
+maxProcess: 1
 
 filters:
   - name: deskew

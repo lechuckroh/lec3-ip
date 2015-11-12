@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"fmt"
 	"image/draw"
+	"github.com/mitchellh/mapstructure"
 )
 
 // ----------------------------------------------------------------------------
@@ -17,6 +18,18 @@ type DeskewOption struct {
 	debugMode            bool
 	threshold            uint8   // min brightness of space (0~255)
 }
+
+func NewDeskewOption(m map[string]interface{}) (*DeskewOption, error) {
+	option := DeskewOption{}
+
+	err := mapstructure.Decode(m, &option)
+	if err != nil {
+		return nil, err
+	}
+
+	return &option, nil
+}
+
 
 type DeskewResult struct {
 	image        image.Image

@@ -2,6 +2,7 @@ package main
 import (
 	"image"
 	"github.com/disintegration/gift"
+	"github.com/mitchellh/mapstructure"
 )
 
 // ----------------------------------------------------------------------------
@@ -18,8 +19,17 @@ type AutoCropOption struct {
 	marginRight       int
 }
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+func NewAutoCropOption(m map[string]interface{}) (*AutoCropOption, error) {
+	option := AutoCropOption{}
+
+	err := mapstructure.Decode(m, &option)
+	if err != nil {
+		return nil, err
+	}
+
+	return &option, nil
+}
+
 type AutoCropResult struct {
 	image image.Image
 	rect  image.Rectangle

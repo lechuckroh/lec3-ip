@@ -10,8 +10,11 @@ import (
 	"runtime"
 	"sync"
 	"reflect"
-	"github.com/olebedev/config"
 )
+
+//-----------------------------------------------------------------------------
+// Work
+//-----------------------------------------------------------------------------
 
 type Work struct {
 	dir      string
@@ -98,30 +101,11 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 	}
 }
 
-func loadYaml(filename string) {
-	cfg, err := config.ParseYamlFile(filename)
-	if err != nil {
-		fmt.Printf("Error : Failed to parse %v : %v\n", filename, err)
-		return
-	}
-
-	// src
-	srcDir := cfg.UString("src.dir", "")
-	srcRecursive := cfg.UBool("src.recursive", false)
-	fmt.Printf("src.dir=%v\n", srcDir)
-	fmt.Printf("src.recursive=%v\n", srcRecursive)
-}
-
 func main() {
-	numCpu := runtime.NumCPU()
-	runtime.GOMAXPROCS(numCpu)
-
-	// Parse command-line options
-	cfgFilename := flag.String("cfg", "", "config filename")
+	cfgFilename := flag.String("cfg", "", "configuration filename")
 	srcDir := flag.String("src", "./", "source directory")
 	destDir := flag.String("dest", "./output", "dest directory")
 	watch := flag.Bool("watch", false, "watch directory files update")
-
 	flag.Parse()
 
 	// Print usage
@@ -130,14 +114,12 @@ func main() {
 		return
 	}
 
-	fmt.Printf("cfgFilename : %+v\n", *cfgFilename)
-	fmt.Printf("srcDir : %+v\n", *srcDir)
-	fmt.Printf("destDir : %+v\n", *destDir)
-	fmt.Printf("watch : %+v\n", *watch)
+	// create Config
+	config := NewConfig(*cfgFilename, *srcDir, *destDir, *watch)
+	config.Print()
 
-	if *cfgFilename != "" {
-		loadYaml(*cfgFilename)
-	}
+	// set maxProcess
+	runtime.GOMAXPROCS(config.maxProcess)
 
 	// Create channels
 	workChan := make(chan Work, 100)
@@ -147,7 +129,7 @@ func main() {
 	wg := sync.WaitGroup{}
 
 	// start collector
-	go collectImages(workChan, finChan, *srcDir, *watch)
+	go collectImages(workChan, finChan, config.src.dir, config.watch)
 
 	// create filters
 	deskewOption := DeskewOption{
@@ -175,17 +157,17 @@ func main() {
 	}
 
 	// start workers
-	for i := 0; i < numCpu; i++ {
+	for i := 0; i < config.maxProcess; i++ {
 		worker := Worker{workChan}
 		wg.Add(1)
-		go work(worker, filters, *destDir, &wg)
+		go work(worker, filters, config.dest.dir, &wg)
 	}
 
 	// wait for collector finish
 	<-finChan
 
 	// finish workers
-	for i := 0; i < numCpu; i++ {
+	for i := 0; i < config.maxProcess; i++ {
 		workChan <- Work{"", "", true}
 	}
 
