@@ -106,7 +106,7 @@ func NewConfig(cfgFilename string, srcDir string, destDir string, watch bool) *C
 		config.src.dir = srcDir
 	}
 	if destFlag := flag.Lookup("dest"); destFlag != nil {
-		config.dest.dir = srcDir
+		config.dest.dir = destDir
 	}
 	if watchFlag := flag.Lookup("watch"); watchFlag != nil {
 		config.watch = watch
