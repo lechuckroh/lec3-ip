@@ -3,6 +3,7 @@ import (
 	"image"
 	"github.com/disintegration/gift"
 	"github.com/mitchellh/mapstructure"
+	"log"
 )
 
 // ----------------------------------------------------------------------------
@@ -66,6 +67,7 @@ func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 
 	// calculate boundary
 	width, height := bounds.Dx(), bounds.Dy()
+	log.Println(bounds)
 
 	top := f.findTopEdge(src, width, height)
 	bottom := f.findBottomEdge(src, width, height, top)
@@ -91,18 +93,17 @@ func (f AutoCropFilter) getCropRect(left, top, right, bottom int, bounds image.R
 	imgWidth, imgHeight := bounds.Dx(), bounds.Dy()
 
 	// maxCropRate
-	minWidth := int(float32(imgWidth) * f.option.maxWidthCropRate)
-	minHeight := int(float32(imgHeight) * f.option.maxHeightCropRate)
+	minWidth := int(float32(imgWidth) * (1 - f.option.maxWidthCropRate))
+	minHeight := int(float32(imgHeight) * (1 - f.option.maxHeightCropRate))
 	width, height = Max(width, minWidth), Max(height, minHeight)
-
 
 	// ratio
 	ratio := float32(height) / float32(width)
 	if ratio < f.option.minRatio {
-		height = int(float32(width) * f.option.minRatio)
+		height = Max(minHeight, int(float32(width) * f.option.minRatio))
 	}
 	if ratio > f.option.maxRatio {
-		width = int(float32(height) / f.option.maxRatio)
+		width = Max(minWidth, int(float32(height) / f.option.maxRatio))
 	}
 
 	// adjust border
@@ -115,6 +116,8 @@ func (f AutoCropFilter) getCropRect(left, top, right, bottom int, bounds image.R
 		rightMargin := Min(imgWidth - right, widthMargin - leftMargin)
 		left -= leftMargin
 		right += rightMargin
+
+		// TODO: divide margin(widthInc - (leftMargin + rightMargin)) both sides
 	}
 
 	if heightInc > 0 {
@@ -123,6 +126,8 @@ func (f AutoCropFilter) getCropRect(left, top, right, bottom int, bounds image.R
 		bottomMargin := Min(imgHeight - bottom, heightMargin - topMargin)
 		top -= topMargin
 		bottom += bottomMargin
+
+		// TODO: divide margin(heightInc - (topMargin + bottomMargin)) both sides
 	}
 
 	return image.Rect(left, top, right, bottom)

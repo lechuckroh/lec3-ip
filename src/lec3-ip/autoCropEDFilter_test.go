@@ -7,11 +7,18 @@ import (
 
 func TestAutoCropED(t *testing.T) {
 	cases := []struct {
+		width          int
+		height         int
+		x1             int
+		y1             int
+		x2             int
+		y2             int
 		option         AutoCropEDOption
 		expectedWidth  int
 		expectedHeight int
 	}{
 		{
+			200, 350, 50, 50, 200 - 50, 350 - 50,
 			AutoCropEDOption{
 				threshold: 100,
 				minRatio: 1.0, maxRatio: 3.0,
@@ -23,24 +30,36 @@ func TestAutoCropED(t *testing.T) {
 		},
 		{
 			// constraint maxRatio
+			200, 350, 50, 50, 200 - 50, 350 - 50,
 			AutoCropEDOption{
 				threshold: 100,
 				minRatio: 1.0, maxRatio: 2.0,
 				maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 				marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 			},
-			135, // max (200 - (50 - 10) * 2, 270 * 0.5)
+			135, // max (200 - (50 - 10) * 2, 200 * 0.5)
 			270, // 350 - (50 - 10) * 2
+		},
+		{
+			// constraint maxCropRatio
+			200, 350, 50, 250, 200 - 50, 350 - 50,
+			AutoCropEDOption{
+				threshold: 100,
+				minRatio: 1.0, maxRatio: 2.0,
+				maxWidthCropRate: 0.1, maxHeightCropRate: 0.1,
+				marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
+			},
+			180, // max (200 - (50 - 10) * 2, 200 * 0.9)
+			315, // max (350 - (250 - 10 + 50 - 10), 350 * 0.9)
 		},
 	}
 
 	for idx, c := range cases {
 		// Create Image (200x350)
 		// Rectangle (100x250)
-		width, height, margin := 200, 350, 50
 		bgColor := color.White
 		rectColor := color.Black
-		srcImg := CreateImageWithRect(width, height, margin, margin, width - margin, height - margin, bgColor, rectColor)
+		srcImg := CreateImageWithRect(c.width, c.height, c.x1, c.y1, c.x2, c.y2, bgColor, rectColor)
 
 		// Run Filter
 		option := c.option
