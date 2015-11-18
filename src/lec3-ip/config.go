@@ -71,9 +71,31 @@ func (c *Config) LoadYaml(filename string) {
 			} else {
 				log.Printf("Failed to read filter : %v : %v\n", name, err)
 			}
+		case "deskewED":
+			if option, err := NewDeskewEDOption(options); err == nil {
+				filter := NewDeskewEDFilter(*option)
+				filterOption := FilterOption{
+					name: name.(string),
+					filter: filter,
+				}
+				c.filters = append(c.filters, filterOption)
+			} else {
+				log.Printf("Failed to read filter : %v : %v\n", name, err)
+			}
 		case "autoCrop":
 			if option, err := NewAutoCropOption(options); err == nil {
 				filter := NewAutoCropFilter(*option)
+				filterOption := FilterOption{
+					name: name.(string),
+					filter: filter,
+				}
+				c.filters = append(c.filters, filterOption)
+			} else {
+				log.Printf("Failed to read filter : %v : %v\n", name, err)
+			}
+		case "autoCropED":
+			if option, err := NewAutoCropEDOption(options); err == nil {
+				filter := NewAutoCropEDFilter(*option)
 				filterOption := FilterOption{
 					name: name.(string),
 					filter: filter,

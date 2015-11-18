@@ -4,6 +4,7 @@ import (
 	"github.com/disintegration/gift"
 	"image/color"
 	"log"
+	"github.com/mitchellh/mapstructure"
 )
 
 // ----------------------------------------------------------------------------
@@ -14,6 +15,17 @@ type DeskewEDOption struct {
 	emptyLineMinDotCount int
 	debugMode            bool
 	threshold            uint8   // edge strength threshold (0~255(max edge))
+}
+
+func NewDeskewEDOption(m map[string]interface{}) (*DeskewEDOption, error) {
+	option := DeskewEDOption{}
+
+	err := mapstructure.Decode(m, &option)
+	if err != nil {
+		return nil, err
+	}
+
+	return &option, nil
 }
 
 type DeskewEDResult struct {

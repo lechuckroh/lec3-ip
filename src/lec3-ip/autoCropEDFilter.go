@@ -3,6 +3,7 @@ import (
 	"image"
 	"github.com/disintegration/gift"
 	"log"
+	"github.com/mitchellh/mapstructure"
 )
 
 // ----------------------------------------------------------------------------
@@ -17,6 +18,17 @@ type AutoCropEDOption struct {
 	marginBottom      int
 	marginLeft        int
 	marginRight       int
+}
+
+func NewAutoCropEDOption(m map[string]interface{}) (*AutoCropEDOption, error) {
+	option := AutoCropEDOption{}
+
+	err := mapstructure.Decode(m, &option)
+	if err != nil {
+		return nil, err
+	}
+
+	return &option, nil
 }
 
 // ----------------------------------------------------------------------------
