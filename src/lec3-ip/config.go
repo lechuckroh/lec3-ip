@@ -57,56 +57,44 @@ func (c *Config) LoadYaml(filename string) {
 			continue
 		}
 
-		options := m["options"].(map[string]interface{})
+		c.addFilterOption(name.(string), m["options"].(map[string]interface{}))
+	}
+}
 
-		switch name {
-		case "deskew":
-			if option, err := NewDeskewOption(options); err == nil {
-				filter := NewDeskewFilter(*option)
-				filterOption := FilterOption{
-					name: name.(string),
-					filter: filter,
-				}
-				c.filters = append(c.filters, filterOption)
-			} else {
-				log.Printf("Failed to read filter : %v : %v\n", name, err)
-			}
-		case "deskewED":
-			if option, err := NewDeskewEDOption(options); err == nil {
-				filter := NewDeskewEDFilter(*option)
-				filterOption := FilterOption{
-					name: name.(string),
-					filter: filter,
-				}
-				c.filters = append(c.filters, filterOption)
-			} else {
-				log.Printf("Failed to read filter : %v : %v\n", name, err)
-			}
-		case "autoCrop":
-			if option, err := NewAutoCropOption(options); err == nil {
-				filter := NewAutoCropFilter(*option)
-				filterOption := FilterOption{
-					name: name.(string),
-					filter: filter,
-				}
-				c.filters = append(c.filters, filterOption)
-			} else {
-				log.Printf("Failed to read filter : %v : %v\n", name, err)
-			}
-		case "autoCropED":
-			if option, err := NewAutoCropEDOption(options); err == nil {
-				filter := NewAutoCropEDFilter(*option)
-				filterOption := FilterOption{
-					name: name.(string),
-					filter: filter,
-				}
-				c.filters = append(c.filters, filterOption)
-			} else {
-				log.Printf("Failed to read filter : %v : %v\n", name, err)
-			}
-		default:
-			log.Printf("Unhandled filter name : %v\n", name)
+func (c *Config) addFilterOption(name string, options map[string]interface{}) {
+	var err error = nil
+	var filter Filter = nil
+
+	switch name {
+	case "deskew":
+		if option, err := NewDeskewOption(options); err == nil {
+			filter = NewDeskewFilter(*option)
 		}
+	case "deskewED":
+		if option, err := NewDeskewEDOption(options); err == nil {
+			filter = NewDeskewEDFilter(*option)
+		}
+	case "autoCrop":
+		if option, err := NewAutoCropOption(options); err == nil {
+			filter = NewAutoCropFilter(*option)
+		}
+	case "autoCropED":
+		if option, err := NewAutoCropEDOption(options); err == nil {
+			filter = NewAutoCropEDFilter(*option)
+		}
+	default:
+		log.Printf("Unhandled filter name : %v\n", name)
+	}
+
+	if filter != nil {
+		filterOption := FilterOption{
+			name: name,
+			filter: filter,
+		}
+		c.filters = append(c.filters, filterOption)
+	}
+	if err != nil {
+		log.Printf("Failed to read filter : %v : %v\n", name, err)
 	}
 }
 
