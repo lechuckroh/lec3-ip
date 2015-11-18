@@ -21,11 +21,11 @@ type FilterOption struct {
 }
 
 type Config struct {
-	src        SrcOption
-	dest       DestOption
-	watch      bool
-	maxProcess int
-	filters    []FilterOption
+	src           SrcOption
+	dest          DestOption
+	watch         bool
+	maxProcess    int
+	filterOptions []FilterOption
 }
 
 func (c *Config) LoadYaml(filename string) {
@@ -91,7 +91,7 @@ func (c *Config) addFilterOption(name string, options map[string]interface{}) {
 			name: name,
 			filter: filter,
 		}
-		c.filters = append(c.filters, filterOption)
+		c.filterOptions = append(c.filterOptions, filterOption)
 	}
 	if err != nil {
 		log.Printf("Failed to read filter : %v : %v\n", name, err)
@@ -103,7 +103,7 @@ func (c *Config) Print() {
 	fmt.Printf("dest.dir : %v\n", c.dest.dir)
 	fmt.Printf("watch : %v\n", c.watch)
 	fmt.Printf("maxProcess : %v\n", c.maxProcess)
-	fmt.Printf("filters : %v\n", len(c.filters))
+	fmt.Printf("filters : %v\n", len(c.filterOptions))
 }
 
 func NewConfig(cfgFilename string, srcDir string, destDir string, watch bool) *Config {
