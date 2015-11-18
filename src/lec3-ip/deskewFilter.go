@@ -3,9 +3,9 @@ import (
 	"image"
 	"github.com/disintegration/gift"
 	"image/color"
-	"fmt"
 	"image/draw"
 	"github.com/mitchellh/mapstructure"
+	"log"
 )
 
 // ----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ func (r DeskewResult) Image() image.Image {
 
 func (r DeskewResult) Log() {
 	if r.rotatedAngle != 0 {
-		fmt.Printf("%v : rotated angle=%v", r.filename, r.rotatedAngle)
+		log.Printf("%v : rotated angle=%v\n", r.filename, r.rotatedAngle)
 	}
 }
 
@@ -131,10 +131,6 @@ func (f DeskewFilter) detectAngle(src *image.RGBA, name string) float32 {
 		}
 	}
 
-	if detectedAngle != 0 {
-		fmt.Printf("detected angle %v\n", detectedAngle)
-	}
-
 	return detectedAngle
 }
 
@@ -168,7 +164,7 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 	}
 
 	if (f.option.debugMode) {
-		fmt.Printf("angle=%v, nonEmptyLineCount=%v\n", angle, nonEmptyLineCount)
+		log.Printf("angle=%v, nonEmptyLineCount=%v\n", angle, nonEmptyLineCount)
 	}
 
 	return nonEmptyLineCount

@@ -2,7 +2,7 @@ package main
 import (
 	"image"
 	"github.com/disintegration/gift"
-	"fmt"
+	"log"
 )
 
 // ----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ func (f AutoCropEDFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	left := f.findLeftEdge(edgeDetected, width, height, top, bottom) + 1
 	right := f.findRightEdge(edgeDetected, width, height, top, bottom, left)
 
-	fmt.Printf("(%v,%v)-(%v,%v)\n", left, top, right, bottom)
+	log.Printf("(%v,%v)-(%v,%v)\n", left, top, right, bottom)
 
 	// crop image
 	if top > 0 || left > 0 || right + 1 < width || bottom + 1 < height {

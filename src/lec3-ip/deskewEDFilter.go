@@ -3,7 +3,7 @@ import (
 	"image"
 	"github.com/disintegration/gift"
 	"image/color"
-	"fmt"
+	"log"
 )
 
 // ----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ func (r DeskewEDResult) Image() image.Image {
 
 func (r DeskewEDResult) Log() {
 	if r.rotatedAngle != 0 {
-		fmt.Printf("%v : rotated angle=%v", r.filename, r.rotatedAngle)
+		log.Printf("%v : rotated angle=%v", r.filename, r.rotatedAngle)
 	}
 }
 
@@ -127,7 +127,7 @@ func (f DeskewEDFilter) detectAngle(edImg *image.Gray, name string) float32 {
 	}
 
 	if detectedAngle != 0 {
-		fmt.Printf("detected angle %v\n", detectedAngle)
+		log.Printf("detected angle %v\n", detectedAngle)
 	}
 
 	return detectedAngle
@@ -163,7 +163,7 @@ func (f DeskewEDFilter) calcNonEmptyLineCount(edImg *image.Gray, angle float32, 
 	}
 
 	if (f.option.debugMode) {
-		fmt.Printf("angle=%v, nonEmptyLineCount=%v\n", angle, nonEmptyLineCount)
+		log.Printf("angle=%v, nonEmptyLineCount=%v\n", angle, nonEmptyLineCount)
 	}
 
 	return nonEmptyLineCount

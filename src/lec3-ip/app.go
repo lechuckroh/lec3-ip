@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"flag"
 	"time"
 	"os"
@@ -10,6 +9,8 @@ import (
 	"runtime"
 	"sync"
 	"reflect"
+	"log"
+	"fmt"
 )
 
 //-----------------------------------------------------------------------------
@@ -39,7 +40,7 @@ func collectImages(workChan chan <- Work, finChan chan <- bool, srcDir string, w
 		// List modified image files
 		files, lastCheckTime, err = ListImages(srcDir, lastCheckTime)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			break
 		}
 
@@ -72,7 +73,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 
 		src, err := LoadImage(path.Join(work.dir, work.filename))
 		if err != nil {
-			fmt.Printf("Error : %+v : %+v\n", work.filename, err)
+			log.Printf("Error : %+v : %+v\n", work.filename, err)
 			continue
 		}
 
@@ -84,7 +85,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 
 			resultImg := result.Image()
 			if resultImg == nil {
-				fmt.Printf("Filter result is nil. filter: %v\n", reflect.TypeOf(filter))
+				log.Printf("Filter result is nil. filter: %v\n", reflect.TypeOf(filter))
 				break
 			}
 
@@ -95,7 +96,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 		// save dest Image
 		err = SaveJpeg(dest, destDir, work.filename, 80)
 		if err != nil {
-			fmt.Printf("Error : %+v : %+v\n", work.filename, err)
+			log.Printf("Error : %+v : %+v\n", work.filename, err)
 			continue
 		}
 	}

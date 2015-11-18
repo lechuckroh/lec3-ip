@@ -2,7 +2,7 @@ package main
 import (
 	"testing"
 	"image/color"
-	"fmt"
+	"log"
 )
 
 func TestAutoCropED(t *testing.T) {
@@ -46,7 +46,7 @@ func TestAutoCropED(t *testing.T) {
 		option := c.option
 		result := NewAutoCropEDFilter(option).Run(NewFilterSource(srcImg, "filename"))
 		resultRect := result.(AutoCropEDResult).rect
-		fmt.Printf("result rect = %v\n", resultRect)
+		log.Printf("result rect = %v\n", resultRect)
 
 		// Test result image size
 		destBounds := result.Image().Bounds()

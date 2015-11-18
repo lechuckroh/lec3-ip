@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"github.com/olebedev/config"
 	"flag"
+	"log"
 )
 
 type SrcOption struct {
@@ -30,7 +31,7 @@ type Config struct {
 func (c *Config) LoadYaml(filename string) {
 	cfg, err := config.ParseYamlFile(filename)
 	if err != nil {
-		fmt.Printf("Error : Failed to parse %v : %v\n", filename, err)
+		log.Printf("Error : Failed to parse %v : %v\n", filename, err)
 		return
 	}
 
@@ -41,7 +42,7 @@ func (c *Config) LoadYaml(filename string) {
 	c.dest.dir = cfg.UString("dest.dir", "")
 	c.watch = cfg.UBool("watch", false)
 	c.maxProcess = cfg.UInt("maxProcess", 0)
-	if c.maxProcess < 0 {
+	if c.maxProcess <= 0 {
 		c.maxProcess = runtime.NumCPU()
 	}
 
@@ -68,7 +69,7 @@ func (c *Config) LoadYaml(filename string) {
 				}
 				c.filters = append(c.filters, filterOption)
 			} else {
-				fmt.Printf("Failed to read filter : %v : %v\n", name, err)
+				log.Printf("Failed to read filter : %v : %v\n", name, err)
 			}
 		case "autoCrop":
 			if option, err := NewAutoCropOption(options); err == nil {
@@ -79,10 +80,10 @@ func (c *Config) LoadYaml(filename string) {
 				}
 				c.filters = append(c.filters, filterOption)
 			} else {
-				fmt.Printf("Failed to read filter : %v : %v\n", name, err)
+				log.Printf("Failed to read filter : %v : %v\n", name, err)
 			}
 		default:
-			fmt.Printf("Unhandled filter name : %v\n", name)
+			log.Printf("Unhandled filter name : %v\n", name)
 		}
 	}
 }
@@ -91,6 +92,7 @@ func (c *Config) Print() {
 	fmt.Printf("src.dir : %v\n", c.src.dir)
 	fmt.Printf("dest.dir : %v\n", c.dest.dir)
 	fmt.Printf("watch : %v\n", c.watch)
+	fmt.Printf("maxProcess : %v\n", c.maxProcess)
 	fmt.Printf("filters : %v\n", len(c.filters))
 }
 
@@ -99,17 +101,17 @@ func NewConfig(cfgFilename string, srcDir string, destDir string, watch bool) *C
 
 	if cfgFilename != "" {
 		config.LoadYaml(cfgFilename)
-	}
-
-	// overwrite config with command line options
-	if srcFlag := flag.Lookup("src"); srcFlag != nil {
-		config.src.dir = srcDir
-	}
-	if destFlag := flag.Lookup("dest"); destFlag != nil {
-		config.dest.dir = destDir
-	}
-	if watchFlag := flag.Lookup("watch"); watchFlag != nil {
-		config.watch = watch
+	} else {
+		// overwrite config with command line options
+		if srcFlag := flag.Lookup("src"); srcFlag != nil {
+			config.src.dir = srcDir
+		}
+		if destFlag := flag.Lookup("dest"); destFlag != nil {
+			config.dest.dir = destDir
+		}
+		if watchFlag := flag.Lookup("watch"); watchFlag != nil {
+			config.watch = watch
+		}
 	}
 
 	return &config
