@@ -127,7 +127,14 @@ func (f AutoCropFilter) getCropRect(left, top, right, bottom int, bounds image.R
 		top -= topMargin
 		bottom += bottomMargin
 
-		// TODO: divide margin(heightInc - (topMargin + bottomMargin)) both sides
+		h := bottom - top
+		dy := heightInc - h + initHeight
+		if dy > 0 {
+			topRatio := top / (top + imgHeight - bottom)
+			topSpace := dy * topRatio
+			top -= topSpace
+			bottom += dy - topSpace
+		}
 	}
 
 	return image.Rect(left, top, right, bottom)
