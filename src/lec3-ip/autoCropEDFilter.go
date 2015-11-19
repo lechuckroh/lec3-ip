@@ -93,7 +93,8 @@ func (f AutoCropEDFilter) run(src image.Image) (image.Image, image.Rectangle) {
 
 	// crop image
 	if top > 0 || left > 0 || right + 1 < width || bottom + 1 < height {
-		cropRect := f.getCropRect(left, top, right + 1, bottom + 1, bounds)
+		o := f.option
+		cropRect := GetCropRect(left, top, right + 1, bottom + 1, bounds, o.maxWidthCropRate, o.maxHeightCropRate, o.minRatio, o.maxRatio)
 		dest := image.NewRGBA(cropRect)
 		crop := gift.New(gift.Crop(cropRect))
 		crop.Draw(dest, src)
@@ -101,67 +102,6 @@ func (f AutoCropEDFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	} else {
 		return src, bounds
 	}
-}
-
-// get constraint satisfied cropped Rectagle
-func (f AutoCropEDFilter) getCropRect(left, top, right, bottom int, bounds image.Rectangle) image.Rectangle {
-	initWidth, initHeight := right - left, bottom - top
-	width, height := initWidth, initHeight
-	imgWidth, imgHeight := bounds.Dx(), bounds.Dy()
-
-	// maxCropRate
-	minWidth := int(float32(imgWidth) * (1 - f.option.maxWidthCropRate))
-	minHeight := int(float32(imgHeight) * (1 - f.option.maxHeightCropRate))
-	width, height = Max(width, minWidth), Max(height, minHeight)
-
-	// ratio
-	ratio := float32(height) / float32(width)
-	if ratio < f.option.minRatio {
-		height = Max(minHeight, int(float32(width) * f.option.minRatio))
-	}
-	if ratio > f.option.maxRatio {
-		width = Max(minWidth, int(float32(height) / f.option.maxRatio))
-	}
-
-	// adjust border
-	widthInc, heightInc := width - initWidth, height - initHeight
-	widthMargin, heightMargin := width - initWidth, height - initHeight
-
-	if widthInc > 0 {
-		widthHalfMargin := int(float32(widthMargin) / 2)
-		leftMargin := Min(left, widthHalfMargin)
-		rightMargin := Min(imgWidth - right, widthMargin - leftMargin)
-		left -= leftMargin
-		right += rightMargin
-
-		w := right - left
-		dx := widthInc - w + initWidth
-		if dx > 0 {
-			leftRatio := left / (left + imgWidth - right)
-			leftSpace := dx * leftRatio
-			left -= leftSpace
-			right += dx - leftSpace
-		}
-	}
-
-	if heightInc > 0 {
-		heightHalfMargin := int(float32(heightMargin) / 2)
-		topMargin := Min(top, heightHalfMargin)
-		bottomMargin := Min(imgHeight - bottom, heightMargin - topMargin)
-		top -= topMargin
-		bottom += bottomMargin
-
-		h := bottom - top
-		dy := heightInc - h + initHeight
-		if dy > 0 {
-			topRatio := top / (top + imgHeight - bottom)
-			topSpace := dy * topRatio
-			top -= topSpace
-			bottom += dy - topSpace
-		}
-	}
-
-	return image.Rect(left, top, right, bottom)
 }
 
 // Find top edge. 0 <= threshold <= 0xffff
