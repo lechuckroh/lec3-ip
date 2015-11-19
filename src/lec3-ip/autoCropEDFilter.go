@@ -134,7 +134,14 @@ func (f AutoCropEDFilter) getCropRect(left, top, right, bottom int, bounds image
 		left -= leftMargin
 		right += rightMargin
 
-		// TODO: divide margin(widthInc - (leftMargin + rightMargin)) both sides
+		w := right - left
+		dx := widthInc - w + initWidth
+		if dx > 0 {
+			leftRatio := left / (left + imgWidth - right)
+			leftSpace := dx * leftRatio
+			left -= leftSpace
+			right += dx - leftSpace
+		}
 	}
 
 	if heightInc > 0 {

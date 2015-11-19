@@ -52,6 +52,18 @@ func TestAutoCropED(t *testing.T) {
 			180, // max (200 - (50 - 10) * 2, 200 * 0.9)
 			315, // max (350 - (250 - 10 + 50 - 10), 350 * 0.9)
 		},
+		{
+			// constraint maxCropRatio
+			200, 350, 140, 50, 200 - 50, 350 - 50,
+			AutoCropEDOption{
+				threshold: 100,
+				minRatio: 1.0, maxRatio: 2.0,
+				maxWidthCropRate: 0.1, maxHeightCropRate: 0.2,
+				marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
+			},
+			180, // max (200 - (140 - 10 + 50 - 10), 200 * 0.9)
+			280, // max (350 - (50 - 10) * 2, 350 * 0.8)
+		},
 	}
 
 	for idx, c := range cases {
