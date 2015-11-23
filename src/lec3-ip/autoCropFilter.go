@@ -3,7 +3,6 @@ import (
 	"image"
 	"github.com/disintegration/gift"
 	"github.com/mitchellh/mapstructure"
-	"log"
 )
 
 // ----------------------------------------------------------------------------
@@ -67,7 +66,6 @@ func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 
 	// calculate boundary
 	width, height := bounds.Dx(), bounds.Dy()
-	log.Println(bounds)
 
 	top := f.findTopEdge(src, width, height)
 	bottom := f.findBottomEdge(src, width, height, top)

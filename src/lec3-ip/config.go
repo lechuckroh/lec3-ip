@@ -41,7 +41,7 @@ func (c *Config) LoadYaml(filename string) {
 	c.src.recursive = cfg.UBool("src.recursive", false)
 	c.dest.dir = cfg.UString("dest.dir", "")
 	c.watch = cfg.UBool("watch", false)
-	c.maxProcess = cfg.UInt("maxProcess", 0)
+	c.maxProcess = cfg.UInt("maxProcess", runtime.NumCPU())
 	if c.maxProcess <= 0 {
 		c.maxProcess = runtime.NumCPU()
 	}
