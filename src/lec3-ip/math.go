@@ -40,3 +40,9 @@ func Floorf32(x float32) float32 {
 	return float32(math.Floor(float64(x)))
 }
 
+func InRange(value, rangeFrom, rangeTo float32) bool {
+	epsilon := float32(0.00001)
+	return rangeFrom <= (value - epsilon) && (value + epsilon) <= rangeTo
+}
+
+

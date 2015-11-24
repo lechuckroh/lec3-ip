@@ -66,20 +66,49 @@ func SaveJpeg(img image.Image, dir string, filename string, quality int) error {
 
 // create image with colored rectangle
 func CreateImageWithRect(width, height, x1, y1, x2, y2 int, bgColor color.Color, rectColor color.Color) image.Image {
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	img := CreateImage(width, height, bgColor)
+	FillRect(img, x1, y1, x2, y2, rectColor)
+	return img
+}
 
+// create image
+func CreateImage(width, height int, bgColor color.Color) *image.RGBA {
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for x := 0; x < width; x++ {
-		rectArea := x >= x1 && x < x2
 		for y := 0; y < height; y++ {
-			if rectArea && y >= y1 && y < y2 {
-				img.Set(x, y, rectColor)
-			} else {
-				img.Set(x, y, bgColor)
-			}
+			img.Set(x, y, bgColor)
 		}
 	}
-
 	return img
+}
+
+// draw filled rect
+func FillRect(img *image.RGBA, x1, y1, x2, y2 int, rectColor color.Color) {
+	for x := x1; x < x2; x++ {
+		for y := y1; y < y2; y++ {
+			img.Set(x, y, rectColor)
+		}
+	}
+}
+
+// draw line
+func DrawLine(img *image.RGBA, x1, y1, x2, y2 int, lineColor color.Color) {
+	dx, dy := x2 - x1, y2 - y1
+	if dx <= dy {
+		incX := float32(dx) / float32(dy)
+		x := float32(x1)
+		for y := y1; y < y2; y++ {
+			img.Set(int(x), y, lineColor)
+			x += incX
+		}
+	} else {
+		incY := float32(dy) / float32(dx)
+		y := float32(y1)
+		for x := x1; x < x2; x++ {
+			img.Set(x, int(y), lineColor)
+			y += incY
+		}
+	}
 }
 
 // calculate width/height after rotation

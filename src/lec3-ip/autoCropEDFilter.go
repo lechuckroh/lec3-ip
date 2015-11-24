@@ -17,6 +17,10 @@ type AutoCropEDOption struct {
 	marginBottom      int
 	marginLeft        int
 	marginRight       int
+	paddingTop        int
+	paddingBottom     int
+	paddingLeft       int
+	paddingRight      int
 }
 
 func NewAutoCropEDOption(m map[string]interface{}) (*AutoCropEDOption, error) {
