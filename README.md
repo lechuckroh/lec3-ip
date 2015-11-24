@@ -35,8 +35,12 @@ Destination directory where processed images are stored.
 #### `-watch`
 Watches source directory and process new/modified images.
 
+#### `-cfg`
+Load configuration yaml file.
+
 ### Examples
 
 ```bash
 lec3-ip -src=./input -dest=./output -watch=true
+lec3-ip -cfg=./config/batch.yaml
 ```
