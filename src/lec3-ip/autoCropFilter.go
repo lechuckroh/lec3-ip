@@ -92,8 +92,10 @@ func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 // Find top edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 	threshold := uint32(f.option.threshold) * 256
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
+	yEnd := height - f.option.paddingBottom
+	xEnd := width - f.option.paddingRight
+	for y := f.option.paddingTop; y < yEnd; y++ {
+		for x := f.option.paddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
 				return Max(0, y - f.option.marginTop)
 			}
@@ -105,8 +107,9 @@ func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 // Find bottom edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findBottomEdge(image image.Image, width, height, top int) int {
 	threshold := uint32(f.option.threshold) * 256
-	for y := height - 1; y > top; y-- {
-		for x := 0; x < width; x++ {
+	xEnd := width - f.option.paddingRight
+	for y := height - f.option.paddingBottom - 1; y > top; y-- {
+		for x := f.option.paddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
 				return Min(height - 1, y + f.option.marginBottom)
 			}
@@ -118,8 +121,10 @@ func (f AutoCropFilter) findBottomEdge(image image.Image, width, height, top int
 // Find left edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bottom int) int {
 	threshold := uint32(f.option.threshold) * 256
-	for x := 0; x < width; x++ {
-		for y := top + 1; y < bottom; y++ {
+	yEnd := height - f.option.paddingBottom
+	xEnd := width - f.option.paddingRight
+	for x := f.option.paddingLeft; x < xEnd; x++ {
+		for y := top + 1; y < yEnd; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
 				return Max(0, x - f.option.marginLeft)
 			}
@@ -131,7 +136,7 @@ func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bott
 // Find right edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findRightEdge(image image.Image, width, height, top, bottom, left int) int {
 	threshold := uint32(f.option.threshold) * 256
-	for x := width - 1; x > left; x-- {
+	for x := width - f.option.paddingRight - 1; x > left; x-- {
 		for y := top + 1; y < bottom; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
 				return Min(width - 1, x + f.option.marginRight)
