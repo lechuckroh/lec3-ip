@@ -11,7 +11,7 @@ func testDeskewED(t *testing.T, img image.Image, option DeskewEDOption, rotatedA
 	rotatedAngle := result.(DeskewEDResult).rotatedAngle
 
 	// Test result image size
-	if ! InRange(rotatedAngle, rotatedAngleMin, rotatedAngleMax) {
+	if ! InRangef32(rotatedAngle, rotatedAngleMin, rotatedAngleMax) {
 		t.Errorf("angle mismatch. exepcted=(%v ~ %v), actual=%v", rotatedAngleMin, rotatedAngleMax, rotatedAngle)
 	}
 }

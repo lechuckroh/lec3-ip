@@ -64,13 +64,6 @@ func SaveJpeg(img image.Image, dir string, filename string, quality int) error {
 	return jpeg.Encode(file, img, &jpeg.Options{quality })
 }
 
-// create image with colored rectangle
-func CreateImageWithRect(width, height, x1, y1, x2, y2 int, bgColor color.Color, rectColor color.Color) image.Image {
-	img := CreateImage(width, height, bgColor)
-	FillRect(img, x1, y1, x2, y2, rectColor)
-	return img
-}
-
 // create image
 func CreateImage(width, height int, bgColor color.Color) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))

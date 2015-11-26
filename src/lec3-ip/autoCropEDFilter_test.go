@@ -6,14 +6,14 @@ import (
 	"image"
 )
 
-func testAutoCropED(t *testing.T, img image.Image, option AutoCropEDOption, expectedWidth, expectedHeight int) {
+func testAutoCropED(t *testing.T, img image.Image, option AutoCropEDOption, expectedWidth, expectedHeight, allowedDelta int) {
 	// Run Filter
 	result := NewAutoCropEDFilter(option).Run(NewFilterSource(img, "filename"))
 
 	// Test result image size
 	destBounds := result.Image().Bounds()
-	widthMatch := destBounds.Dx() == expectedWidth
-	heightMatch := destBounds.Dy() == expectedHeight
+	widthMatch := InRange(destBounds.Dx(), expectedWidth - allowedDelta, expectedWidth + allowedDelta)
+	heightMatch := InRange(destBounds.Dy(), expectedHeight - allowedDelta, expectedHeight + allowedDelta)
 
 	if !widthMatch || !heightMatch {
 		resultRect := result.(AutoCropEDResult).rect
@@ -40,6 +40,7 @@ func TestAutoCropEDMargin(t *testing.T) {
 	},
 		120, // max(width - leftSpace - rightSpace + marginLeft + marginRight, width * maxWidthCropRate)
 		270, // max(height - topSpace - bottomSpace + marginTop + marginBottom, height * maxHeightCropRate)
+		0,
 	)
 }
 
@@ -55,6 +56,7 @@ func TestAutoCropEDMaxRatio(t *testing.T) {
 	},
 		135, // max(120, expectedHeight / maxRatio)
 		270, // 270
+		0,
 	)
 }
 
@@ -70,13 +72,14 @@ func TestAutoCropEDMaxCropRatio(t *testing.T) {
 	},
 		180, // max(width - leftSpace - rightSpace + marginLeft + marginRight, width * maxWidthCropRate)
 		280, // max(height - topSpace - bottomSpace + marginTop + marginBottom, height * maxHeightCropRate)
+		0,
 	)
 }
 
 func TestAutoCropEDInnerDetectionPadding1(t *testing.T) {
 	img := CreateImage(200, 350, color.White)
 	FillRect(img, 50, 50, 150, 300, color.Black)
-	DrawLine(img, 0, 1, 200, 1, color.Black)
+	DrawLine(img, 0, 0, 200, 0, color.Black)
 	DrawLine(img, 25, 0, 25, 350, color.Black)
 
 	testAutoCropED(t, img, AutoCropEDOption{
@@ -84,10 +87,11 @@ func TestAutoCropEDInnerDetectionPadding1(t *testing.T) {
 		minRatio: 1.0, maxRatio: 10.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
-		paddingTop: 25,
+		paddingTop: 10, paddingLeft: 25,
 	},
 		145,
 		350,
+		2,
 	)
 }
 
@@ -106,5 +110,6 @@ func TestAutoCropEDInnerDetectionPadding2(t *testing.T) {
 	},
 		120,
 		270,
+		2,
 	)
 }
