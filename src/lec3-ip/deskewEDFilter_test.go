@@ -17,8 +17,8 @@ func testDeskewED(t *testing.T, img image.Image, option DeskewEDOption, rotatedA
 }
 
 func TestDeskewEDCCW(t *testing.T) {
-	img := CreateImage(800, 1200, color.White)
-	FillRect(img, 50, 50, 750, 1150, color.Black)
+	img := CreateImage(400, 700, color.White)
+	FillRect(img, 50, 50, 350, 650, color.Black)
 	rotatedImg := RotateImage(img, -1.4, color.White)
 
 	// Run Filter
@@ -32,8 +32,8 @@ func TestDeskewEDCCW(t *testing.T) {
 }
 
 func TestDeskewEDCW(t *testing.T) {
-	img := CreateImage(800, 1200, color.White)
-	FillRect(img, 50, 50, 750, 1150, color.Black)
+	img := CreateImage(400, 700, color.White)
+	FillRect(img, 50, 50, 350, 650, color.Black)
 	rotatedImg := RotateImage(img, 1.4, color.White)
 
 	// Run Filter
