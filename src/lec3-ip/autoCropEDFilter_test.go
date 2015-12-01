@@ -106,7 +106,7 @@ func TestAutoCropEDInnerDetectionPadding2(t *testing.T) {
 		minRatio: 1.0, maxRatio: 10.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
-		paddingTop: 21, paddingLeft: 11,
+		paddingTop: 22, paddingLeft: 12,
 	},
 		120,
 		270,
