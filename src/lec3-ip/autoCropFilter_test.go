@@ -1,9 +1,10 @@
 package main
+
 import (
-	"testing"
+	"image"
 	"image/color"
 	"log"
-	"image"
+	"testing"
 )
 
 func testAutoCrop(t *testing.T, img image.Image, option AutoCropOption, expectedWidth, expectedHeight int) {
@@ -34,7 +35,7 @@ func TestAutoCropMargin(t *testing.T) {
 
 	testAutoCrop(t, img, AutoCropOption{
 		threshold: 128,
-		minRatio: 1.0, maxRatio: 3.0,
+		minRatio:  1.0, maxRatio: 3.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 	},
@@ -49,7 +50,7 @@ func TestAutoCropMaxRatio(t *testing.T) {
 
 	testAutoCrop(t, img, AutoCropOption{
 		threshold: 128,
-		minRatio: 1.0, maxRatio: 2.0,
+		minRatio:  1.0, maxRatio: 2.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 	},
@@ -64,7 +65,7 @@ func TestAutoCropMaxCropRatio(t *testing.T) {
 
 	testAutoCrop(t, img, AutoCropOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 2.0,
+		minRatio:  1.0, maxRatio: 2.0,
 		maxWidthCropRate: 0.1, maxHeightCropRate: 0.2,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 	},
@@ -81,7 +82,7 @@ func TestAutoCropInnerDetectionPadding1(t *testing.T) {
 
 	testAutoCrop(t, img, AutoCropOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 10.0,
+		minRatio:  1.0, maxRatio: 10.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 		paddingTop: 10, paddingLeft: 25,
@@ -99,12 +100,28 @@ func TestAutoCropInnerDetectionPadding2(t *testing.T) {
 
 	testAutoCrop(t, img, AutoCropOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 10.0,
+		minRatio:  1.0, maxRatio: 10.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 		paddingTop: 21, paddingLeft: 11,
 	},
 		120,
 		270,
+	)
+}
+
+func TestAutoCropMaxCrop(t *testing.T) {
+	img := CreateImage(200, 350, color.White)
+	FillRect(img, 50, 50, 150, 300, color.Black)
+
+	testAutoCrop(t, img, AutoCropOption{
+		threshold: 128,
+		minRatio:  1.0, maxRatio: 3.0,
+		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
+		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
+		maxCropTop: 0, maxCropBottom: 100, maxCropLeft: 0, maxCropRight: 100,
+	},
+		160, // max(width - rightSpace + marginRight, width * maxWidthCropRate)
+		310, // max(height - bottomSpace + marginBottom, height * maxHeightCropRate)
 	)
 }

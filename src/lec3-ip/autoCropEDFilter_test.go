@@ -1,9 +1,10 @@
 package main
+
 import (
-	"testing"
+	"image"
 	"image/color"
 	"log"
-	"image"
+	"testing"
 )
 
 func testAutoCropED(t *testing.T, img image.Image, option AutoCropEDOption, expectedWidth, expectedHeight, allowedDelta int) {
@@ -12,8 +13,8 @@ func testAutoCropED(t *testing.T, img image.Image, option AutoCropEDOption, expe
 
 	// Test result image size
 	destBounds := result.Image().Bounds()
-	widthMatch := InRange(destBounds.Dx(), expectedWidth - allowedDelta, expectedWidth + allowedDelta)
-	heightMatch := InRange(destBounds.Dy(), expectedHeight - allowedDelta, expectedHeight + allowedDelta)
+	widthMatch := InRange(destBounds.Dx(), expectedWidth-allowedDelta, expectedWidth+allowedDelta)
+	heightMatch := InRange(destBounds.Dy(), expectedHeight-allowedDelta, expectedHeight+allowedDelta)
 
 	if !widthMatch || !heightMatch {
 		resultRect := result.(AutoCropEDResult).rect
@@ -34,7 +35,7 @@ func TestAutoCropEDMargin(t *testing.T) {
 
 	testAutoCropED(t, img, AutoCropEDOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 3.0,
+		minRatio:  1.0, maxRatio: 3.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 	},
@@ -50,7 +51,7 @@ func TestAutoCropEDMaxRatio(t *testing.T) {
 
 	testAutoCropED(t, img, AutoCropEDOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 2.0,
+		minRatio:  1.0, maxRatio: 2.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 	},
@@ -66,7 +67,7 @@ func TestAutoCropEDMaxCropRatio(t *testing.T) {
 
 	testAutoCropED(t, img, AutoCropEDOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 2.0,
+		minRatio:  1.0, maxRatio: 2.0,
 		maxWidthCropRate: 0.1, maxHeightCropRate: 0.2,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 	},
@@ -84,7 +85,7 @@ func TestAutoCropEDInnerDetectionPadding1(t *testing.T) {
 
 	testAutoCropED(t, img, AutoCropEDOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 10.0,
+		minRatio:  1.0, maxRatio: 10.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 		paddingTop: 10, paddingLeft: 25,
@@ -103,13 +104,30 @@ func TestAutoCropEDInnerDetectionPadding2(t *testing.T) {
 
 	testAutoCropED(t, img, AutoCropEDOption{
 		threshold: 100,
-		minRatio: 1.0, maxRatio: 10.0,
+		minRatio:  1.0, maxRatio: 10.0,
 		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
 		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
 		paddingTop: 22, paddingLeft: 12,
 	},
 		120,
 		270,
+		2,
+	)
+}
+
+func TestAutoCropEDMaxCrop(t *testing.T) {
+	img := CreateImage(200, 350, color.White)
+	FillRect(img, 50, 50, 150, 300, color.Black)
+
+	testAutoCropED(t, img, AutoCropEDOption{
+		threshold: 128,
+		minRatio:  1.0, maxRatio: 3.0,
+		maxWidthCropRate: 0.5, maxHeightCropRate: 0.5,
+		marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10,
+		maxCropTop: 0, maxCropBottom: 100, maxCropLeft: 0, maxCropRight: 100,
+	},
+		160, // max(width - rightSpace + marginRight, width * maxWidthCropRate)
+		310, // max(height - bottomSpace + marginBottom, height * maxHeightCropRate)
 		2,
 	)
 }

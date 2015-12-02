@@ -1,8 +1,9 @@
 package main
+
 import (
-	"image"
 	"github.com/disintegration/gift"
 	"github.com/mitchellh/mapstructure"
+	"image"
 )
 
 // ----------------------------------------------------------------------------
@@ -21,6 +22,10 @@ type AutoCropOption struct {
 	paddingBottom     int
 	paddingLeft       int
 	paddingRight      int
+	maxCropTop        int
+	maxCropBottom     int
+	maxCropLeft       int
+	maxCropRight      int
 }
 
 func NewAutoCropOption(m map[string]interface{}) (*AutoCropOption, error) {
@@ -46,7 +51,6 @@ func (r AutoCropResult) Image() image.Image {
 func (r AutoCropResult) Log() {
 }
 
-
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 type AutoCropFilter struct {
@@ -67,6 +71,7 @@ func (f AutoCropFilter) Run(s *FilterSource) FilterResult {
 // actual autoCrop implementation
 func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	bounds := src.Bounds()
+	o := f.option
 
 	// calculate boundary
 	width, height := bounds.Dx(), bounds.Dy()
@@ -76,10 +81,26 @@ func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	left := f.findLeftEdge(src, width, height, top, bottom)
 	right := f.findRightEdge(src, width, height, top, bottom, left)
 
+	// maxCrop
+	disableMaxCrop := (o.maxCropTop == 0 && o.maxCropBottom == 0 && o.maxCropLeft == 0 && o.maxCropRight == 0)
+	if !disableMaxCrop {
+		if o.maxCropTop >= 0 {
+			top = Min(o.maxCropTop, top)
+		}
+		if o.maxCropBottom >= 0 {
+			bottom = Max(height-o.maxCropBottom, bottom)
+		}
+		if o.maxCropLeft >= 0 {
+			left = Min(o.maxCropLeft, left)
+		}
+		if o.maxCropRight >= 0 {
+			right = Max(width-o.maxCropRight, right)
+		}
+	}
+
 	// crop image
-	if top > 0 || left > 0 || right + 1 < width || bottom + 1 < height {
-		o := f.option
-		cropRect := GetCropRect(left, top, right + 1, bottom + 1, bounds, o.maxWidthCropRate, o.maxHeightCropRate, o.minRatio, o.maxRatio)
+	if top > 0 || left > 0 || right+1 < width || bottom+1 < height {
+		cropRect := GetCropRect(left, top, right+1, bottom+1, bounds, o.maxWidthCropRate, o.maxHeightCropRate, o.minRatio, o.maxRatio)
 		dest := image.NewRGBA(cropRect)
 		crop := gift.New(gift.Crop(cropRect))
 		crop.Draw(dest, src)
@@ -96,8 +117,8 @@ func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 	xEnd := width - f.option.paddingRight
 	for y := f.option.paddingTop; y < yEnd; y++ {
 		for x := f.option.paddingLeft; x < xEnd; x++ {
-			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
-				return Max(0, y - f.option.marginTop)
+			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
+				return Max(0, y-f.option.marginTop)
 			}
 		}
 	}
@@ -110,8 +131,8 @@ func (f AutoCropFilter) findBottomEdge(image image.Image, width, height, top int
 	xEnd := width - f.option.paddingRight
 	for y := height - f.option.paddingBottom - 1; y > top; y-- {
 		for x := f.option.paddingLeft; x < xEnd; x++ {
-			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
-				return Min(height - 1, y + f.option.marginBottom)
+			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
+				return Min(height-1, y+f.option.marginBottom)
 			}
 		}
 	}
@@ -125,8 +146,8 @@ func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bott
 	xEnd := width - f.option.paddingRight
 	for x := f.option.paddingLeft; x < xEnd; x++ {
 		for y := top + 1; y < yEnd; y++ {
-			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
-				return Max(0, x - f.option.marginLeft)
+			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
+				return Max(0, x-f.option.marginLeft)
 			}
 		}
 	}
@@ -138,8 +159,8 @@ func (f AutoCropFilter) findRightEdge(image image.Image, width, height, top, bot
 	threshold := uint32(f.option.threshold) * 256
 	for x := width - f.option.paddingRight - 1; x > left; x-- {
 		for y := top + 1; y < bottom; y++ {
-			if r, g, b, _ := image.At(x, y).RGBA(); (r + g + b) / 3 < threshold {
-				return Min(width - 1, x + f.option.marginRight)
+			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
+				return Min(width-1, x+f.option.marginRight)
 			}
 		}
 	}

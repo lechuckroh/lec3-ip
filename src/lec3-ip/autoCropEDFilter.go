@@ -1,8 +1,9 @@
 package main
+
 import (
-	"image"
 	"github.com/disintegration/gift"
 	"github.com/mitchellh/mapstructure"
+	"image"
 )
 
 // ----------------------------------------------------------------------------
@@ -21,6 +22,10 @@ type AutoCropEDOption struct {
 	paddingBottom     int
 	paddingLeft       int
 	paddingRight      int
+	maxCropTop        int
+	maxCropBottom     int
+	maxCropLeft       int
+	maxCropRight      int
 }
 
 func NewAutoCropEDOption(m map[string]interface{}) (*AutoCropEDOption, error) {
@@ -48,7 +53,6 @@ func (r AutoCropEDResult) Image() image.Image {
 func (r AutoCropEDResult) Log() {
 }
 
-
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 type AutoCropEDFilter struct {
@@ -69,7 +73,7 @@ func NewAutoCropEDFilter(option AutoCropEDOption) *AutoCropEDFilter {
 		))
 	return &AutoCropEDFilter{
 		edgeDetect: edgeDetect,
-		option: option,
+		option:     option,
 	}
 }
 
@@ -82,13 +86,14 @@ func (f AutoCropEDFilter) Run(s *FilterSource) FilterResult {
 // actual autoCrop implementation
 func (f AutoCropEDFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	bounds := src.Bounds()
+	o := f.option
 
 	// Edge Detect
 	edgeDetected := image.NewGray(bounds)
 	f.edgeDetect.Draw(edgeDetected, src)
 
-//	SaveJpeg(src, "./", "autoCropSrc.jpg", 80)
-//	SaveJpeg(edgeDetected, "./", "autoCropED.jpg", 80)
+	//	SaveJpeg(src, "./", "autoCropSrc.jpg", 80)
+	//	SaveJpeg(edgeDetected, "./", "autoCropED.jpg", 80)
 
 	// calculate boundary
 	width, height := bounds.Dx(), bounds.Dy()
@@ -98,10 +103,26 @@ func (f AutoCropEDFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	left := f.findLeftEdge(edgeDetected, width, height, top, bottom) + 1
 	right := f.findRightEdge(edgeDetected, width, height, top, bottom, left)
 
+	// maxCrop
+	disableMaxCrop := (o.maxCropTop == 0 && o.maxCropBottom == 0 && o.maxCropLeft == 0 && o.maxCropRight == 0)
+	if !disableMaxCrop {
+		if o.maxCropTop >= 0 {
+			top = Min(o.maxCropTop, top)
+		}
+		if o.maxCropBottom >= 0 {
+			bottom = Max(height-o.maxCropBottom, bottom)
+		}
+		if o.maxCropLeft >= 0 {
+			left = Min(o.maxCropLeft, left)
+		}
+		if o.maxCropRight >= 0 {
+			right = Max(width-o.maxCropRight, right)
+		}
+	}
+
 	// crop image
-	if top > 0 || left > 0 || right + 1 < width || bottom + 1 < height {
-		o := f.option
-		cropRect := GetCropRect(left, top, right + 1, bottom + 1, bounds, o.maxWidthCropRate, o.maxHeightCropRate, o.minRatio, o.maxRatio)
+	if top > 0 || left > 0 || right+1 < width || bottom+1 < height {
+		cropRect := GetCropRect(left, top, right+1, bottom+1, bounds, o.maxWidthCropRate, o.maxHeightCropRate, o.minRatio, o.maxRatio)
 		dest := image.NewRGBA(cropRect)
 		crop := gift.New(gift.Crop(cropRect))
 		crop.Draw(dest, src)
@@ -119,7 +140,7 @@ func (f AutoCropEDFilter) findTopEdge(image *image.Gray, width, height int) int 
 	for y := f.option.paddingTop; y < yEnd; y++ {
 		for x := f.option.paddingLeft; x < xEnd; x++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return Max(0, y - f.option.marginTop)
+				return Max(0, y-f.option.marginTop)
 			}
 		}
 	}
@@ -133,7 +154,7 @@ func (f AutoCropEDFilter) findBottomEdge(image *image.Gray, width, height, top i
 	for y := height - f.option.paddingBottom - 1; y > top; y-- {
 		for x := f.option.paddingLeft; x < xEnd; x++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return Min(height - 1, y - 1 + f.option.marginBottom)
+				return Min(height-1, y-1+f.option.marginBottom)
 			}
 		}
 	}
@@ -148,7 +169,7 @@ func (f AutoCropEDFilter) findLeftEdge(image *image.Gray, width, height, top, bo
 	for x := f.option.paddingLeft; x < xEnd; x++ {
 		for y := top + 1; y < yEnd; y++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return Max(0, x - f.option.marginLeft)
+				return Max(0, x-f.option.marginLeft)
 			}
 		}
 	}
@@ -161,7 +182,7 @@ func (f AutoCropEDFilter) findRightEdge(image *image.Gray, width, height, top, b
 	for x := width - f.option.paddingRight - 1; x > left; x-- {
 		for y := top + 1; y < bottom; y++ {
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
-				return Min(width - 1, x - 1 + f.option.marginRight)
+				return Min(width-1, x-1+f.option.marginRight)
 			}
 		}
 	}

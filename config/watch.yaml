@@ -26,3 +26,7 @@ filters:
       marginBottom: 5
       marginLeft: 5
       marginRight: 5
+      maxCropTop: -1
+      maxCropBottom: -1
+      maxCropLeft: -1
+      maxCropRight: -1
