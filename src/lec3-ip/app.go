@@ -132,29 +132,9 @@ func main() {
 	// start collector
 	go collectImages(workChan, finChan, config.src.dir, config.watch)
 
-	// create filters
-	deskewOption := DeskewOption{
-		maxRotation: 2.0,
-		incrStep: 0.2,
-		threshold: 100,
-		emptyLineMinDotCount: 10,
-		debugOutputDir: "./debug",
-		debugMode: false,
-	}
-	autoCropOption := AutoCropOption{
-		threshold: 100,
-		minRatio: 1,
-		maxRatio: 3,
-		maxWidthCropRate: 0.2,
-		maxHeightCropRate: 0.2,
-		marginTop: 5,
-		marginBottom: 5,
-		marginLeft: 5,
-		marginRight: 5,
-	}
-	filters := []Filter{
-		NewDeskewFilter(deskewOption),
-		NewAutoCropFilter(autoCropOption),
+	var filters []Filter
+	for _, filterOption := range config.filterOptions {
+		filters = append(filters, filterOption.filter)
 	}
 
 	// start workers
