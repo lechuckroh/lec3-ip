@@ -12,7 +12,7 @@ import (
 type DeskewEDOption struct {
 	maxRotation          float32 // max rotation angle (0 <= value <= 360)
 	incrStep             float32 // rotation angle increment step (0 <= value <= 360)
-	emptyLineMinDotCount int
+	emptyLineMaxDotCount int
 	debugMode            bool
 	threshold            uint8   // edge strength threshold (0~255(max edge))
 }
@@ -169,7 +169,7 @@ func (f DeskewEDFilter) calcNonEmptyLineCount(edImg *image.Gray, angle float32, 
 			yPos += dy
 		}
 
-		if f.option.emptyLineMinDotCount < dotCount {
+		if f.option.emptyLineMaxDotCount < dotCount {
 			nonEmptyLineCount++
 		}
 	}

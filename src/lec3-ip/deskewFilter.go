@@ -13,7 +13,7 @@ import (
 type DeskewOption struct {
 	maxRotation          float32 // max rotation angle (0 <= value <= 360)
 	incrStep             float32 // rotation angle increment step (0 <= value <= 360)
-	emptyLineMinDotCount int
+	emptyLineMaxDotCount int
 	debugOutputDir       string
 	debugMode            bool
 	threshold            uint8   // min brightness of space (0~255)
@@ -158,7 +158,7 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 			yPos += dy
 		}
 
-		if f.option.emptyLineMinDotCount < dotCount {
+		if f.option.emptyLineMaxDotCount < dotCount {
 			nonEmptyLineCount++
 		}
 	}

@@ -13,7 +13,7 @@ filters:
     options:
       maxRotation: 2.0
       incrStep: 0.2
-      emptyLineMinDotCount: 5
+      emptyLineMaxDotCount: 5
       threshold: 220
   - name: autoCrop
     options:
