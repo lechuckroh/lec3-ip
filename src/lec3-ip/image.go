@@ -61,7 +61,11 @@ func SaveJpeg(img image.Image, dir string, filename string, quality int) error {
 		return err
 	}
 
-	return jpeg.Encode(file, img, &jpeg.Options{quality })
+	err = jpeg.Encode(file, img, &jpeg.Options{quality })
+	if err != nil {
+		return err
+	}
+	return file.Close()
 }
 
 // create image
