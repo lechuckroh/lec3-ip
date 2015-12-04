@@ -111,19 +111,19 @@ func (f AutoCropEDFilter) run(src image.Image) (image.Image, image.Rectangle) {
 			top = Min(o.MaxCropTop, top)
 		}
 		if o.MaxCropBottom >= 0 {
-			bottom = Max(height-o.MaxCropBottom, bottom)
+			bottom = Max(height - o.MaxCropBottom, bottom)
 		}
 		if o.MaxCropLeft >= 0 {
 			left = Min(o.MaxCropLeft, left)
 		}
 		if o.MaxCropRight >= 0 {
-			right = Max(width-o.MaxCropRight, right)
+			right = Max(width - o.MaxCropRight, right)
 		}
 	}
 
 	// crop image
-	if top > 0 || left > 0 || right+1 < width || bottom+1 < height {
-		cropRect := GetCropRect(left, top, right+1, bottom+1, bounds, o.MaxWidthCropRate, o.MaxHeightCropRate, o.MinRatio, o.MaxRatio)
+	if top > 0 || left > 0 || right + 1 < width || bottom + 1 < height {
+		cropRect := GetCropRect(left, top, right + 1, bottom + 1, bounds, o.MaxWidthCropRate, o.MaxHeightCropRate, o.MinRatio, o.MaxRatio)
 		dest := image.NewRGBA(cropRect)
 		crop := gift.New(gift.Crop(cropRect))
 		crop.Draw(dest, src)
@@ -145,7 +145,7 @@ func (f AutoCropEDFilter) findTopEdge(image *image.Gray, width, height int) int 
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Max(0, y-f.option.MarginTop)
+					return Max(0, y - f.option.MarginTop)
 				}
 			}
 		}
@@ -164,7 +164,7 @@ func (f AutoCropEDFilter) findBottomEdge(image *image.Gray, width, height, top i
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Min(height-1, y-1+f.option.MarginBottom)
+					return Min(height - 1, y - 1 + f.option.MarginBottom)
 				}
 			}
 		}
@@ -184,7 +184,7 @@ func (f AutoCropEDFilter) findLeftEdge(image *image.Gray, width, height, top, bo
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Max(0, x-f.option.MarginLeft)
+					return Max(0, x - f.option.MarginLeft)
 				}
 			}
 		}
@@ -202,7 +202,7 @@ func (f AutoCropEDFilter) findRightEdge(image *image.Gray, width, height, top, b
 			if r, _, _, _ := image.At(x, y).RGBA(); r > threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Min(width-1, x-1+f.option.MarginRight)
+					return Min(width - 1, x - 1 + f.option.MarginRight)
 				}
 			}
 		}

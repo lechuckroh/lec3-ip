@@ -13,8 +13,8 @@ func testAutoCropED(t *testing.T, img image.Image, option AutoCropEDOption, expe
 
 	// Test result image size
 	destBounds := result.Image().Bounds()
-	widthMatch := InRange(destBounds.Dx(), expectedWidth-allowedDelta, expectedWidth+allowedDelta)
-	heightMatch := InRange(destBounds.Dy(), expectedHeight-allowedDelta, expectedHeight+allowedDelta)
+	widthMatch := InRange(destBounds.Dx(), expectedWidth - allowedDelta, expectedWidth + allowedDelta)
+	heightMatch := InRange(destBounds.Dy(), expectedHeight - allowedDelta, expectedHeight + allowedDelta)
 
 	if !widthMatch || !heightMatch {
 		resultRect := result.(AutoCropEDResult).rect

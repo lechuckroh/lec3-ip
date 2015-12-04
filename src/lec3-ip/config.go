@@ -48,7 +48,7 @@ func (c *Config) LoadYaml(filename string) {
 	}
 
 	// Load filters
-	for i := 0; ; i++ {
+	for i := 0;; i++ {
 		m, err := cfg.Map(fmt.Sprintf("filters.%v", i))
 		if err != nil {
 			break

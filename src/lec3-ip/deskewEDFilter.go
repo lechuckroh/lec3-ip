@@ -15,7 +15,7 @@ type DeskewEDOption struct {
 	IncrStep             float32 // rotation angle increment step (0 <= value <= 360)
 	EmptyLineMaxDotCount int
 	DebugMode            bool
-	Threshold            uint8 // edge strength threshold (0~255(max edge))
+	Threshold            uint8   // edge strength threshold (0~255(max edge))
 }
 
 func NewDeskewEDOption(m map[string]interface{}) (*DeskewEDOption, error) {
