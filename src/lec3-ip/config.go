@@ -1,10 +1,11 @@
 package main
+
 import (
-	"fmt"
-	"runtime"
-	"github.com/olebedev/config"
 	"flag"
+	"fmt"
+	"github.com/olebedev/config"
 	"log"
+	"runtime"
 )
 
 type SrcOption struct {
@@ -47,7 +48,7 @@ func (c *Config) LoadYaml(filename string) {
 	}
 
 	// Load filters
-	for i := 0;; i++ {
+	for i := 0; ; i++ {
 		m, err := cfg.Map(fmt.Sprintf("filters.%v", i))
 		if err != nil {
 			break
@@ -88,10 +89,11 @@ func (c *Config) addFilterOption(name string, options map[string]interface{}) {
 
 	if filter != nil {
 		filterOption := FilterOption{
-			name: name,
+			name:   name,
 			filter: filter,
 		}
 		c.filterOptions = append(c.filterOptions, filterOption)
+		fmt.Printf("Filter added : %v\n", name)
 	}
 	if err != nil {
 		log.Printf("Failed to read filter : %v : %v\n", name, err)

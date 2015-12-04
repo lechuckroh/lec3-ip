@@ -1,8 +1,9 @@
 package main
+
 import (
-	"testing"
-	"image/color"
 	"image"
+	"image/color"
+	"testing"
 )
 
 func testDeskewED(t *testing.T, img image.Image, option DeskewEDOption, rotatedAngleMin, rotatedAngleMax float32) {
@@ -11,7 +12,7 @@ func testDeskewED(t *testing.T, img image.Image, option DeskewEDOption, rotatedA
 	rotatedAngle := result.(DeskewEDResult).rotatedAngle
 
 	// Test result image size
-	if ! InRangef32(rotatedAngle, rotatedAngleMin, rotatedAngleMax) {
+	if !InRangef32(rotatedAngle, rotatedAngleMin, rotatedAngleMax) {
 		t.Errorf("angle mismatch. exepcted=(%v ~ %v), actual=%v", rotatedAngleMin, rotatedAngleMax, rotatedAngle)
 	}
 }
@@ -23,10 +24,10 @@ func TestDeskewEDCCW(t *testing.T) {
 
 	// Run Filter
 	option := DeskewEDOption{
-		maxRotation: 2,
-		incrStep: 0.2,
-		threshold: 100,
-		emptyLineMaxDotCount: 0,
+		MaxRotation:          2,
+		IncrStep:             0.2,
+		Threshold:            100,
+		EmptyLineMaxDotCount: 0,
 	}
 	testDeskewED(t, rotatedImg, option, 1.2, 1.6)
 }
@@ -38,10 +39,10 @@ func TestDeskewEDCW(t *testing.T) {
 
 	// Run Filter
 	option := DeskewEDOption{
-		maxRotation: 2,
-		incrStep: 0.2,
-		threshold: 100,
-		emptyLineMaxDotCount: 0,
+		MaxRotation:          2,
+		IncrStep:             0.2,
+		Threshold:            100,
+		EmptyLineMaxDotCount: 0,
 	}
 	testDeskewED(t, rotatedImg, option, -1.6, -1.2)
 }

@@ -9,24 +9,24 @@ import (
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 type AutoCropOption struct {
-	threshold            uint8   // min brightness of space (0~255)
-	minRatio             float32 // min cropped ratio (height / width)
-	maxRatio             float32 // max cropped ratio (height / width)
-	maxWidthCropRate     float32 // max width crop rate (0 <= rate < 1.0)
-	maxHeightCropRate    float32 // max height crop rate (0 <= rate < 1.0)
-	emptyLineMaxDotCount int
-	marginTop            int
-	marginBottom         int
-	marginLeft           int
-	marginRight          int
-	paddingTop           int
-	paddingBottom        int
-	paddingLeft          int
-	paddingRight         int
-	maxCropTop           int
-	maxCropBottom        int
-	maxCropLeft          int
-	maxCropRight         int
+	Threshold            uint8   // min brightness of space (0~255)
+	MinRatio             float32 // min cropped ratio (height / width)
+	MaxRatio             float32 // max cropped ratio (height / width)
+	MaxWidthCropRate     float32 // max width crop rate (0 <= rate < 1.0)
+	MaxHeightCropRate    float32 // max height crop rate (0 <= rate < 1.0)
+	EmptyLineMaxDotCount int
+	MarginTop            int
+	MarginBottom         int
+	MarginLeft           int
+	MarginRight          int
+	PaddingTop           int
+	PaddingBottom        int
+	PaddingLeft          int
+	PaddingRight         int
+	MaxCropTop           int
+	MaxCropBottom        int
+	MaxCropLeft          int
+	MaxCropRight         int
 }
 
 func NewAutoCropOption(m map[string]interface{}) (*AutoCropOption, error) {
@@ -83,25 +83,25 @@ func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	right := f.findRightEdge(src, width, height, top, bottom, left)
 
 	// maxCrop
-	disableMaxCrop := (o.maxCropTop == 0 && o.maxCropBottom == 0 && o.maxCropLeft == 0 && o.maxCropRight == 0)
+	disableMaxCrop := (o.MaxCropTop == 0 && o.MaxCropBottom == 0 && o.MaxCropLeft == 0 && o.MaxCropRight == 0)
 	if !disableMaxCrop {
-		if o.maxCropTop >= 0 {
-			top = Min(o.maxCropTop, top)
+		if o.MaxCropTop >= 0 {
+			top = Min(o.MaxCropTop, top)
 		}
-		if o.maxCropBottom >= 0 {
-			bottom = Max(height-o.maxCropBottom, bottom)
+		if o.MaxCropBottom >= 0 {
+			bottom = Max(height-o.MaxCropBottom, bottom)
 		}
-		if o.maxCropLeft >= 0 {
-			left = Min(o.maxCropLeft, left)
+		if o.MaxCropLeft >= 0 {
+			left = Min(o.MaxCropLeft, left)
 		}
-		if o.maxCropRight >= 0 {
-			right = Max(width-o.maxCropRight, right)
+		if o.MaxCropRight >= 0 {
+			right = Max(width-o.MaxCropRight, right)
 		}
 	}
 
 	// crop image
 	if top > 0 || left > 0 || right+1 < width || bottom+1 < height {
-		cropRect := GetCropRect(left, top, right+1, bottom+1, bounds, o.maxWidthCropRate, o.maxHeightCropRate, o.minRatio, o.maxRatio)
+		cropRect := GetCropRect(left, top, right+1, bottom+1, bounds, o.MaxWidthCropRate, o.MaxHeightCropRate, o.MinRatio, o.MaxRatio)
 		dest := image.NewRGBA(cropRect)
 		crop := gift.New(gift.Crop(cropRect))
 		crop.Draw(dest, src)
@@ -113,17 +113,17 @@ func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 
 // Find top edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
-	threshold := uint32(f.option.threshold) * 256
-	yEnd := height - f.option.paddingBottom
-	xEnd := width - f.option.paddingRight
+	threshold := uint32(f.option.Threshold) * 256
+	yEnd := height - f.option.PaddingBottom
+	xEnd := width - f.option.PaddingRight
 	dotCount := 0
-	maxDotCount := f.option.emptyLineMaxDotCount
-	for y := f.option.paddingTop; y < yEnd; y++ {
-		for x := f.option.paddingLeft; x < xEnd; x++ {
+	maxDotCount := f.option.EmptyLineMaxDotCount
+	for y := f.option.PaddingTop; y < yEnd; y++ {
+		for x := f.option.PaddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Max(0, y-f.option.marginTop)
+					return Max(0, y-f.option.MarginTop)
 				}
 			}
 		}
@@ -133,16 +133,16 @@ func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 
 // Find bottom edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findBottomEdge(image image.Image, width, height, top int) int {
-	threshold := uint32(f.option.threshold) * 256
-	xEnd := width - f.option.paddingRight
+	threshold := uint32(f.option.Threshold) * 256
+	xEnd := width - f.option.PaddingRight
 	dotCount := 0
-	maxDotCount := f.option.emptyLineMaxDotCount
-	for y := height - f.option.paddingBottom - 1; y > top; y-- {
-		for x := f.option.paddingLeft; x < xEnd; x++ {
+	maxDotCount := f.option.EmptyLineMaxDotCount
+	for y := height - f.option.PaddingBottom - 1; y > top; y-- {
+		for x := f.option.PaddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Min(height-1, y+f.option.marginBottom)
+					return Min(height-1, y+f.option.MarginBottom)
 				}
 			}
 		}
@@ -152,17 +152,17 @@ func (f AutoCropFilter) findBottomEdge(image image.Image, width, height, top int
 
 // Find left edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bottom int) int {
-	threshold := uint32(f.option.threshold) * 256
-	yEnd := height - f.option.paddingBottom
-	xEnd := width - f.option.paddingRight
+	threshold := uint32(f.option.Threshold) * 256
+	yEnd := height - f.option.PaddingBottom
+	xEnd := width - f.option.PaddingRight
 	dotCount := 0
-	maxDotCount := f.option.emptyLineMaxDotCount
-	for x := f.option.paddingLeft; x < xEnd; x++ {
+	maxDotCount := f.option.EmptyLineMaxDotCount
+	for x := f.option.PaddingLeft; x < xEnd; x++ {
 		for y := top + 1; y < yEnd; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Max(0, x-f.option.marginLeft)
+					return Max(0, x-f.option.MarginLeft)
 				}
 			}
 		}
@@ -172,15 +172,15 @@ func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bott
 
 // Find right edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findRightEdge(image image.Image, width, height, top, bottom, left int) int {
-	threshold := uint32(f.option.threshold) * 256
+	threshold := uint32(f.option.Threshold) * 256
 	dotCount := 0
-	maxDotCount := f.option.emptyLineMaxDotCount
-	for x := width - f.option.paddingRight - 1; x > left; x-- {
+	maxDotCount := f.option.EmptyLineMaxDotCount
+	for x := width - f.option.PaddingRight - 1; x > left; x-- {
 		for y := top + 1; y < bottom; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
 				if dotCount > maxDotCount {
-					return Min(width-1, x+f.option.marginRight)
+					return Min(width-1, x+f.option.MarginRight)
 				}
 			}
 		}

@@ -11,11 +11,11 @@ import (
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 type DeskewEDOption struct {
-	maxRotation          float32 // max rotation angle (0 <= value <= 360)
-	incrStep             float32 // rotation angle increment step (0 <= value <= 360)
-	emptyLineMaxDotCount int
-	debugMode            bool
-	threshold            uint8 // edge strength threshold (0~255(max edge))
+	MaxRotation          float32 // max rotation angle (0 <= value <= 360)
+	IncrStep             float32 // rotation angle increment step (0 <= value <= 360)
+	EmptyLineMaxDotCount int
+	DebugMode            bool
+	Threshold            uint8 // edge strength threshold (0~255(max edge))
 }
 
 func NewDeskewEDOption(m map[string]interface{}) (*DeskewEDOption, error) {
@@ -113,9 +113,9 @@ func (f DeskewEDFilter) detectAngle(edImg *image.Gray, name string) float32 {
 	positiveDir := true
 	negativeDir := true
 
-	incrStep := f.option.incrStep
+	incrStep := f.option.IncrStep
 	if incrStep > 0 {
-		for angle := incrStep; angle <= f.option.maxRotation; angle += incrStep {
+		for angle := incrStep; angle <= f.option.MaxRotation; angle += incrStep {
 			if positiveDir {
 				nonEmptyLineCount := f.calcNonEmptyLineCount(edImg, angle, name)
 
@@ -153,7 +153,7 @@ func (f DeskewEDFilter) calcNonEmptyLineCount(edImg *image.Gray, angle float32, 
 	dy, _ := Sincosf32(angle)
 	bounds := edImg.Bounds()
 
-	threshold := uint32(f.option.threshold) * 256
+	threshold := uint32(f.option.Threshold) * 256
 	nonEmptyLineCount := 0
 	width, height := bounds.Dx(), bounds.Dy()
 	for y := 0; y < height; y++ {
@@ -173,12 +173,12 @@ func (f DeskewEDFilter) calcNonEmptyLineCount(edImg *image.Gray, angle float32, 
 			yPos += dy
 		}
 
-		if f.option.emptyLineMaxDotCount < dotCount {
+		if f.option.EmptyLineMaxDotCount < dotCount {
 			nonEmptyLineCount++
 		}
 	}
 
-	if f.option.debugMode {
+	if f.option.DebugMode {
 		log.Printf("angle=%v, nonEmptyLineCount=%v\n", angle, nonEmptyLineCount)
 	}
 

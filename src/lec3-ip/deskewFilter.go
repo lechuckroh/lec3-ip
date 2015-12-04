@@ -12,12 +12,12 @@ import (
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 type DeskewOption struct {
-	maxRotation          float32 // max rotation angle (0 <= value <= 360)
-	incrStep             float32 // rotation angle increment step (0 <= value <= 360)
-	emptyLineMaxDotCount int
-	debugOutputDir       string
-	debugMode            bool
-	threshold            uint8 // min brightness of space (0~255)
+	MaxRotation          float32 // max rotation angle (0 <= value <= 360)
+	IncrStep             float32 // rotation angle increment step (0 <= value <= 360)
+	EmptyLineMaxDotCount int
+	DebugOutputDir       string
+	DebugMode            bool
+	Threshold            uint8 // min brightness of space (0~255)
 }
 
 func NewDeskewOption(m map[string]interface{}) (*DeskewOption, error) {
@@ -105,9 +105,9 @@ func (f DeskewFilter) detectAngle(src *image.RGBA, name string) float32 {
 	positiveDir := true
 	negativeDir := true
 
-	incrStep := f.option.incrStep
+	incrStep := f.option.IncrStep
 	if incrStep > 0 {
-		for angle := incrStep; angle <= f.option.maxRotation; angle += incrStep {
+		for angle := incrStep; angle <= f.option.MaxRotation; angle += incrStep {
 			if positiveDir {
 				nonEmptyLineCount := f.calcNonEmptyLineCount(src, angle, name)
 
@@ -141,7 +141,7 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 	dy, _ := Sincosf32(angle)
 	bounds := src.Bounds()
 
-	threshold := uint32(f.option.threshold) * 256
+	threshold := uint32(f.option.Threshold) * 256
 	nonEmptyLineCount := 0
 	width, height := bounds.Dx(), bounds.Dy()
 	for y := 0; y < height; y++ {
@@ -161,12 +161,12 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 			yPos += dy
 		}
 
-		if f.option.emptyLineMaxDotCount < dotCount {
+		if f.option.EmptyLineMaxDotCount < dotCount {
 			nonEmptyLineCount++
 		}
 	}
 
-	if f.option.debugMode {
+	if f.option.DebugMode {
 		log.Printf("angle=%v, nonEmptyLineCount=%v\n", angle, nonEmptyLineCount)
 	}
 
