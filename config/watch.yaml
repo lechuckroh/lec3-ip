@@ -22,6 +22,7 @@ filters:
       maxRatio: 3.0
       maxWidthCropRate: 0.3
       maxHeightCropRate: 0.3
+      emptyLineMaxDotCount: 0
       marginTop: 5
       marginBottom: 5
       marginLeft: 5

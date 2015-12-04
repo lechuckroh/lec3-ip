@@ -9,23 +9,24 @@ import (
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 type AutoCropOption struct {
-	threshold         uint8   // min brightness of space (0~255)
-	minRatio          float32 // min cropped ratio (height / width)
-	maxRatio          float32 // max cropped ratio (height / width)
-	maxWidthCropRate  float32 // max width crop rate (0 <= rate < 1.0)
-	maxHeightCropRate float32 // max height crop rate (0 <= rate < 1.0)
-	marginTop         int
-	marginBottom      int
-	marginLeft        int
-	marginRight       int
-	paddingTop        int
-	paddingBottom     int
-	paddingLeft       int
-	paddingRight      int
-	maxCropTop        int
-	maxCropBottom     int
-	maxCropLeft       int
-	maxCropRight      int
+	threshold            uint8   // min brightness of space (0~255)
+	minRatio             float32 // min cropped ratio (height / width)
+	maxRatio             float32 // max cropped ratio (height / width)
+	maxWidthCropRate     float32 // max width crop rate (0 <= rate < 1.0)
+	maxHeightCropRate    float32 // max height crop rate (0 <= rate < 1.0)
+	emptyLineMaxDotCount int
+	marginTop            int
+	marginBottom         int
+	marginLeft           int
+	marginRight          int
+	paddingTop           int
+	paddingBottom        int
+	paddingLeft          int
+	paddingRight         int
+	maxCropTop           int
+	maxCropBottom        int
+	maxCropLeft          int
+	maxCropRight         int
 }
 
 func NewAutoCropOption(m map[string]interface{}) (*AutoCropOption, error) {
@@ -115,10 +116,15 @@ func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 	threshold := uint32(f.option.threshold) * 256
 	yEnd := height - f.option.paddingBottom
 	xEnd := width - f.option.paddingRight
+	dotCount := 0
+	maxDotCount := f.option.emptyLineMaxDotCount
 	for y := f.option.paddingTop; y < yEnd; y++ {
 		for x := f.option.paddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
-				return Max(0, y-f.option.marginTop)
+				dotCount++
+				if dotCount > maxDotCount {
+					return Max(0, y-f.option.marginTop)
+				}
 			}
 		}
 	}
@@ -129,10 +135,15 @@ func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 func (f AutoCropFilter) findBottomEdge(image image.Image, width, height, top int) int {
 	threshold := uint32(f.option.threshold) * 256
 	xEnd := width - f.option.paddingRight
+	dotCount := 0
+	maxDotCount := f.option.emptyLineMaxDotCount
 	for y := height - f.option.paddingBottom - 1; y > top; y-- {
 		for x := f.option.paddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
-				return Min(height-1, y+f.option.marginBottom)
+				dotCount++
+				if dotCount > maxDotCount {
+					return Min(height-1, y+f.option.marginBottom)
+				}
 			}
 		}
 	}
@@ -144,10 +155,15 @@ func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bott
 	threshold := uint32(f.option.threshold) * 256
 	yEnd := height - f.option.paddingBottom
 	xEnd := width - f.option.paddingRight
+	dotCount := 0
+	maxDotCount := f.option.emptyLineMaxDotCount
 	for x := f.option.paddingLeft; x < xEnd; x++ {
 		for y := top + 1; y < yEnd; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
-				return Max(0, x-f.option.marginLeft)
+				dotCount++
+				if dotCount > maxDotCount {
+					return Max(0, x-f.option.marginLeft)
+				}
 			}
 		}
 	}
@@ -157,10 +173,15 @@ func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bott
 // Find right edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findRightEdge(image image.Image, width, height, top, bottom, left int) int {
 	threshold := uint32(f.option.threshold) * 256
+	dotCount := 0
+	maxDotCount := f.option.emptyLineMaxDotCount
 	for x := width - f.option.paddingRight - 1; x > left; x-- {
 		for y := top + 1; y < bottom; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
-				return Min(width-1, x+f.option.marginRight)
+				dotCount++
+				if dotCount > maxDotCount {
+					return Min(width-1, x+f.option.marginRight)
+				}
 			}
 		}
 	}
