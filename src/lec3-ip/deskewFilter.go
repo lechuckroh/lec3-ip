@@ -1,10 +1,11 @@
 package main
+
 import (
-	"image"
 	"github.com/disintegration/gift"
+	"github.com/mitchellh/mapstructure"
+	"image"
 	"image/color"
 	"image/draw"
-	"github.com/mitchellh/mapstructure"
 	"log"
 )
 
@@ -16,7 +17,7 @@ type DeskewOption struct {
 	emptyLineMaxDotCount int
 	debugOutputDir       string
 	debugMode            bool
-	threshold            uint8   // min brightness of space (0~255)
+	threshold            uint8 // min brightness of space (0~255)
 }
 
 func NewDeskewOption(m map[string]interface{}) (*DeskewOption, error) {
@@ -29,7 +30,6 @@ func NewDeskewOption(m map[string]interface{}) (*DeskewOption, error) {
 
 	return &option, nil
 }
-
 
 type DeskewResult struct {
 	image        image.Image
@@ -105,29 +105,32 @@ func (f DeskewFilter) detectAngle(src *image.RGBA, name string) float32 {
 	positiveDir := true
 	negativeDir := true
 
-	for angle := f.option.incrStep; angle <= f.option.maxRotation; angle += f.option.incrStep {
-		if positiveDir {
-			nonEmptyLineCount := f.calcNonEmptyLineCount(src, angle, name)
+	incrStep := f.option.incrStep
+	if incrStep > 0 {
+		for angle := incrStep; angle <= f.option.maxRotation; angle += incrStep {
+			if positiveDir {
+				nonEmptyLineCount := f.calcNonEmptyLineCount(src, angle, name)
 
-			if nonEmptyLineCount <= minNonEmptyLineCount {
-				minNonEmptyLineCount = nonEmptyLineCount
-				detectedAngle = angle
-			} else if nonEmptyLineCount > prevPositiveCount {
-				positiveDir = false
+				if nonEmptyLineCount <= minNonEmptyLineCount {
+					minNonEmptyLineCount = nonEmptyLineCount
+					detectedAngle = angle
+				} else if nonEmptyLineCount > prevPositiveCount {
+					positiveDir = false
+				}
+				prevPositiveCount = nonEmptyLineCount
 			}
-			prevPositiveCount = nonEmptyLineCount
-		}
 
-		if angle > 0 && negativeDir {
-			nonEmptyLineCount := f.calcNonEmptyLineCount(src, -angle, name)
+			if angle > 0 && negativeDir {
+				nonEmptyLineCount := f.calcNonEmptyLineCount(src, -angle, name)
 
-			if nonEmptyLineCount <= minNonEmptyLineCount {
-				minNonEmptyLineCount = nonEmptyLineCount
-				detectedAngle = -angle
-			} else if nonEmptyLineCount > prevNegativeCount {
-				negativeDir = false
+				if nonEmptyLineCount <= minNonEmptyLineCount {
+					minNonEmptyLineCount = nonEmptyLineCount
+					detectedAngle = -angle
+				} else if nonEmptyLineCount > prevNegativeCount {
+					negativeDir = false
+				}
+				prevNegativeCount = nonEmptyLineCount
 			}
-			prevNegativeCount = nonEmptyLineCount
 		}
 	}
 
@@ -151,7 +154,7 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 				break
 			}
 
-			if r, g, b, _ := src.At(x, yPosInt).RGBA(); (r + g + b) / 3 <= threshold {
+			if r, g, b, _ := src.At(x, yPosInt).RGBA(); (r+g+b)/3 <= threshold {
 				dotCount++
 			}
 
@@ -163,7 +166,7 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 		}
 	}
 
-	if (f.option.debugMode) {
+	if f.option.debugMode {
 		log.Printf("angle=%v, nonEmptyLineCount=%v\n", angle, nonEmptyLineCount)
 	}
 
