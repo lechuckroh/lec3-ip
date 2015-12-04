@@ -116,9 +116,9 @@ func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 	threshold := uint32(f.option.Threshold) * 256
 	yEnd := height - f.option.PaddingBottom
 	xEnd := width - f.option.PaddingRight
-	dotCount := 0
 	maxDotCount := f.option.EmptyLineMaxDotCount
 	for y := f.option.PaddingTop; y < yEnd; y++ {
+		dotCount := 0
 		for x := f.option.PaddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
@@ -135,9 +135,9 @@ func (f AutoCropFilter) findTopEdge(image image.Image, width, height int) int {
 func (f AutoCropFilter) findBottomEdge(image image.Image, width, height, top int) int {
 	threshold := uint32(f.option.Threshold) * 256
 	xEnd := width - f.option.PaddingRight
-	dotCount := 0
 	maxDotCount := f.option.EmptyLineMaxDotCount
 	for y := height - f.option.PaddingBottom - 1; y > top; y-- {
+		dotCount := 0
 		for x := f.option.PaddingLeft; x < xEnd; x++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
@@ -155,9 +155,9 @@ func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bott
 	threshold := uint32(f.option.Threshold) * 256
 	yEnd := height - f.option.PaddingBottom
 	xEnd := width - f.option.PaddingRight
-	dotCount := 0
 	maxDotCount := f.option.EmptyLineMaxDotCount
 	for x := f.option.PaddingLeft; x < xEnd; x++ {
+		dotCount := 0
 		for y := top + 1; y < yEnd; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
@@ -173,9 +173,9 @@ func (f AutoCropFilter) findLeftEdge(image image.Image, width, height, top, bott
 // Find right edge. 0 <= threshold <= 0xffff
 func (f AutoCropFilter) findRightEdge(image image.Image, width, height, top, bottom, left int) int {
 	threshold := uint32(f.option.Threshold) * 256
-	dotCount := 0
 	maxDotCount := f.option.EmptyLineMaxDotCount
 	for x := width - f.option.PaddingRight - 1; x > left; x-- {
+		dotCount := 0
 		for y := top + 1; y < bottom; y++ {
 			if r, g, b, _ := image.At(x, y).RGBA(); (r+g+b)/3 < threshold {
 				dotCount++
