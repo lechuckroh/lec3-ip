@@ -17,7 +17,7 @@ type DeskewOption struct {
 	EmptyLineMaxDotCount int
 	DebugOutputDir       string
 	DebugMode            bool
-	Threshold            uint8   // min brightness of space (0~255)
+	Threshold            uint8 // min brightness of space (0~255)
 }
 
 func NewDeskewOption(m map[string]interface{}) (*DeskewOption, error) {
@@ -141,7 +141,7 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 	dy, _ := Sincosf32(angle)
 	bounds := src.Bounds()
 
-	threshold := uint32(f.option.Threshold) * 256
+	thresholdSum := uint32(f.option.Threshold) * 256 * 3
 	nonEmptyLineCount := 0
 	width, height := bounds.Dx(), bounds.Dy()
 	for y := 0; y < height; y++ {
@@ -154,7 +154,7 @@ func (f DeskewFilter) calcNonEmptyLineCount(src *image.RGBA, angle float32, name
 				break
 			}
 
-			if r, g, b, _ := src.At(x, yPosInt).RGBA(); (r + g + b) / 3 <= threshold {
+			if r, g, b, _ := src.At(x, yPosInt).RGBA(); r+g+b <= thresholdSum {
 				dotCount++
 			}
 
