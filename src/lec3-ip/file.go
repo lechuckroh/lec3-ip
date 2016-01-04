@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sort"
+	"log"
 )
 
 // Sort FileInfo by Name
@@ -25,27 +26,26 @@ func (files Files) Swap(i, j int) {
 }
 
 // List image files that modified after timeAfterOptional
-func ListImages(dir string, timeAfterOptional ...time.Time) ([]os.FileInfo, time.Time, error) {
-	var result Files
+func ListImages(dir string, watchDelay int, lastCheckTime time.Time) ([]os.FileInfo, time.Time, error) {
+	listAfter := lastCheckTime
+	if watchDelay > 0 && lastCheckTime.After(time.Unix(0,0)) {
+		listAfter = lastCheckTime.Add(-time.Duration(watchDelay) * time.Second)
+	}
 
-	lastCheckTime := time.Now()
+	var result Files
 	files, err := ioutil.ReadDir(dir)
 
 	// Failed to read directory
 	if err != nil {
 		return result, lastCheckTime, err
-	}
-
-	// Get EMT(Earliest Modified Time)
-	timeAfter := time.Unix(0, 0)
-	if len(timeAfterOptional) > 0 {
-		timeAfter = timeAfterOptional[0]
+	} else {
+		lastCheckTime = time.Now()
 	}
 
 	// Get file list that modified after EMT
 	for _, file := range files {
 		ext := strings.ToLower(filepath.Ext(file.Name()))
-		if !file.ModTime().After(timeAfter) {
+		if !file.ModTime().After(listAfter) {
 			continue
 		}
 
@@ -55,6 +55,10 @@ func ListImages(dir string, timeAfterOptional ...time.Time) ([]os.FileInfo, time
 	}
 
 	sort.Sort(result)
+
+	if result.Len() > 0 {
+		log.Printf("%v files after %v\n", result.Len(), listAfter)
+	}
 
 	return result, lastCheckTime, nil
 }

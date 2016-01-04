@@ -27,7 +27,7 @@ type Worker struct {
 	workChan <-chan Work
 }
 
-func collectImages(workChan chan <- Work, finChan chan <- bool, srcDir string, watch bool) {
+func collectImages(workChan chan <- Work, finChan chan <- bool, srcDir string, watch bool, watchDelay int) {
 	defer func() {
 		finChan <- true
 	}()
@@ -38,7 +38,7 @@ func collectImages(workChan chan <- Work, finChan chan <- bool, srcDir string, w
 
 	for {
 		// List modified image files
-		files, lastCheckTime, err = ListImages(srcDir, lastCheckTime)
+		files, lastCheckTime, err = ListImages(srcDir, watchDelay, lastCheckTime)
 		if err != nil {
 			log.Println(err)
 			break
@@ -130,7 +130,7 @@ func main() {
 	wg := sync.WaitGroup{}
 
 	// start collector
-	go collectImages(workChan, finChan, config.src.dir, config.watch)
+	go collectImages(workChan, finChan, config.src.dir, config.watch, config.watchDelay)
 
 	var filters []Filter
 	for _, filterOption := range config.filterOptions {

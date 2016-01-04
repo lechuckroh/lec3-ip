@@ -6,6 +6,7 @@ dest:
   dir: ./output/
 
 watch: true
+watchDelay: 5
 maxProcess: 1
 
 filters:
