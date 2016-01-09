@@ -41,7 +41,7 @@ func (r DeskewEDResult) Image() image.Image {
 
 func (r DeskewEDResult) Log() {
 	if r.rotatedAngle != 0 {
-		log.Printf("%v : rotated angle=%v", r.filename, r.rotatedAngle)
+		log.Printf("[ROTATE] %v : %.1f", r.filename, r.rotatedAngle)
 	}
 }
 
@@ -119,10 +119,10 @@ func (f DeskewEDFilter) detectAngle(edImg *image.Gray, name string) float32 {
 			if positiveDir {
 				nonEmptyLineCount := f.calcNonEmptyLineCount(edImg, angle, name)
 
-				if nonEmptyLineCount <= minNonEmptyLineCount {
+				if nonEmptyLineCount < minNonEmptyLineCount {
 					minNonEmptyLineCount = nonEmptyLineCount
 					detectedAngle = angle
-				} else if nonEmptyLineCount > prevPositiveCount {
+				} else if nonEmptyLineCount >= prevPositiveCount {
 					positiveDir = false
 				}
 				prevPositiveCount = nonEmptyLineCount
@@ -131,10 +131,10 @@ func (f DeskewEDFilter) detectAngle(edImg *image.Gray, name string) float32 {
 			if angle > 0 && negativeDir {
 				nonEmptyLineCount := f.calcNonEmptyLineCount(edImg, -angle, name)
 
-				if nonEmptyLineCount <= minNonEmptyLineCount {
+				if nonEmptyLineCount < minNonEmptyLineCount {
 					minNonEmptyLineCount = nonEmptyLineCount
 					detectedAngle = -angle
-				} else if nonEmptyLineCount > prevNegativeCount {
+				} else if nonEmptyLineCount >= prevNegativeCount {
 					negativeDir = false
 				}
 				prevNegativeCount = nonEmptyLineCount

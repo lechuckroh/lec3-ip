@@ -10,7 +10,6 @@ import (
 	"sync"
 	"reflect"
 	"log"
-	"fmt"
 )
 
 //-----------------------------------------------------------------------------
@@ -69,7 +68,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 			break
 		}
 
-		fmt.Printf("Processing : %+v\n", work.filename)
+		log.Printf("[READ] %+v\n", work.filename)
 
 		src, err := LoadImage(path.Join(work.dir, work.filename))
 		if err != nil {
