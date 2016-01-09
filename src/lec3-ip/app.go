@@ -68,7 +68,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 			break
 		}
 
-		log.Printf("[READ] %+v\n", work.filename)
+		log.Printf("[R] %+v\n", work.filename)
 
 		src, err := LoadImage(path.Join(work.dir, work.filename))
 		if err != nil {

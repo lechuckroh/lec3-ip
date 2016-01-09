@@ -31,12 +31,14 @@ func isImage(ext string) bool {
 
 // List image files that modified after timeAfterOptional
 func ListImages(dir string, watchDelay int, lastCheckTime time.Time) ([]os.FileInfo, time.Time, error) {
+	now := time.Now()
+
 	duration := -time.Duration(watchDelay) * time.Second
 	listAfter := lastCheckTime
 	if watchDelay > 0 && listAfter.After(time.Unix(0, 0)) {
 		listAfter = listAfter.Add(duration)
 	}
-	listBefore := time.Now().Add(duration)
+	listBefore := now.Add(duration)
 
 	var result Files
 	files, err := ioutil.ReadDir(dir)
@@ -46,13 +48,13 @@ func ListImages(dir string, watchDelay int, lastCheckTime time.Time) ([]os.FileI
 		return result, lastCheckTime, err
 	}
 
-	lastCheckTime = time.Now()
+	lastCheckTime = now
 
 	// Get file list that modified after EMT
 	for _, file := range files {
 		ext := strings.ToLower(filepath.Ext(file.Name()))
 		modTime := file.ModTime()
-		if !modTime.Before(listAfter) && modTime.Before(listBefore) && isImage(ext) {
+		if !modTime.Before(listAfter) && !modTime.After(listBefore) && isImage(ext) {
 			result = append(result, file)
 		}
 	}
@@ -60,7 +62,7 @@ func ListImages(dir string, watchDelay int, lastCheckTime time.Time) ([]os.FileI
 	sort.Sort(result)
 
 	if result.Len() > 0 {
-		log.Printf("[ADD] %v files\n", result.Len())
+		log.Printf("[+] %v\n", result.Len())
 	}
 
 	return result, lastCheckTime, nil
