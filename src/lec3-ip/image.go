@@ -13,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"image/draw"
 )
 
 func getExt(filename string) string {
@@ -155,6 +156,7 @@ func RotateImage(src image.Image, angle float32, bgColor color.Color) image.Imag
 	bounds := src.Bounds()
 	width, height := CalcRotatedSize(bounds.Dx(), bounds.Dy(), angle)
 	dest := image.NewRGBA(image.Rect(0, 0, width, height))
+	draw.Draw(dest, dest.Bounds(), &image.Uniform{color.White}, image.ZP, draw.Src)
 	gift.New(gift.Rotate(angle, bgColor, gift.CubicInterpolation)).Draw(dest, src)
 	return dest
 }

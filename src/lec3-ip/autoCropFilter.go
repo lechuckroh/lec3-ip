@@ -4,6 +4,8 @@ import (
 	"github.com/disintegration/gift"
 	"github.com/mitchellh/mapstructure"
 	"image"
+	"image/draw"
+	"image/color"
 )
 
 // ----------------------------------------------------------------------------
@@ -103,6 +105,7 @@ func (f AutoCropFilter) run(src image.Image) (image.Image, image.Rectangle) {
 	if top > 0 || left > 0 || right+1 < width || bottom+1 < height {
 		cropRect := GetCropRect(left, top, right+1, bottom+1, bounds, o.MaxWidthCropRate, o.MaxHeightCropRate, o.MinRatio, o.MaxRatio)
 		dest := image.NewRGBA(cropRect)
+		draw.Draw(dest, dest.Bounds(), &image.Uniform{color.White}, image.ZP, draw.Src)
 		crop := gift.New(gift.Crop(cropRect))
 		crop.Draw(dest, src)
 		return dest, cropRect

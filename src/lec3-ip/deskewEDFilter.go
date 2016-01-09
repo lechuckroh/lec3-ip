@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"image/draw"
 )
 
 // ----------------------------------------------------------------------------
@@ -96,6 +97,7 @@ func (f DeskewEDFilter) rotateImage(src image.Image, angle float32) image.Image 
 	bounds := src.Bounds()
 	width, height := CalcRotatedSize(bounds.Dx(), bounds.Dy(), angle)
 	dest := image.NewRGBA(image.Rect(0, 0, width, height))
+	draw.Draw(dest, dest.Bounds(), &image.Uniform{color.White}, image.ZP, draw.Src)
 	rotateFilter := gift.New(gift.Rotate(angle, color.White, gift.CubicInterpolation))
 	rotateFilter.Draw(dest, src)
 	return dest
