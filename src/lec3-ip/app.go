@@ -68,11 +68,11 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 			break
 		}
 
-		log.Printf("[R] %+v\n", work.filename)
+		log.Printf("[R] %v\n", work.filename)
 
 		src, err := LoadImage(path.Join(work.dir, work.filename))
 		if err != nil {
-			log.Printf("Error : %+v : %+v\n", work.filename, err)
+			log.Printf("Error : %v : %v\n", work.filename, err)
 			continue
 		}
 
@@ -95,7 +95,7 @@ func work(worker Worker, filters []Filter, destDir string, wg *sync.WaitGroup) {
 		// save dest Image
 		err = SaveJpeg(dest, destDir, work.filename, 80)
 		if err != nil {
-			log.Printf("Error : %+v : %+v\n", work.filename, err)
+			log.Printf("Error : %v : %v\n", work.filename, err)
 			continue
 		}
 	}
