@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - 1.6
+
+install:
+- go get -u github.com/disintegration/gift
+- go get -u github.com/olebedev/config
+- go get -u github.com/mitchellh/mapstructure 
+
