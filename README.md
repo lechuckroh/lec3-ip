@@ -1,5 +1,7 @@
 # LEC3 ImageProcessor
 
+[![Build Status](https://travis-ci.org/lechuckroh/lec3-ip.svg?branch=master)](https://travis-ci.org/lechuckroh/lec3-ip)
+
 Image Process module of LEC3
 
 ## Requirements
