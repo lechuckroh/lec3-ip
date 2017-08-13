@@ -1,3 +1,5 @@
+Moved to https://github.com/lechuckroh/lec3
+
 # LEC3 ImageProcessor
 
 [![Build Status](https://travis-ci.org/lechuckroh/lec3-ip.svg?branch=master)](https://travis-ci.org/lechuckroh/lec3-ip)
